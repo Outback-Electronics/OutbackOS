@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1024" height="1024" viewBox="0 0 1024 1024"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Outback OS logo</title>
+  <desc id="desc">Circular dark navy and electric blue Outback OS emblem with an outback ridge, kangaroo, windmill, OS monogram, product name, and tagline.</desc>
+
+  <defs>
+    <linearGradient id="blueRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1495ff"/>
+      <stop offset="1" stop-color="#0070e8"/>
+    </linearGradient>
+    <linearGradient id="osBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#159cff"/>
+      <stop offset="1" stop-color="#006fe8"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="512" cy="512" r="472" fill="#07111f"/>
+  <circle cx="512" cy="512" r="458" fill="none" stroke="url(#blueRing)" stroke-width="24"/>
+
+  <path d="M117 262 L90 250 L100 220 L128 230 Z
+           M900 255 L931 241 L942 274 L911 286 Z
+           M109 753 L84 771 L100 798 L130 783 Z
+           M890 777 L924 789 L912 820 L879 808 Z"
+        fill="#07111f"/>
+
+  <path d="M148 330
+           C210 287 262 272 315 290
+           C372 309 417 267 468 277
+           C527 290 565 251 620 259
+           C684 269 711 309 760 299
+           C805 290 839 301 875 329
+           L875 384
+           C822 371 786 365 735 374
+           C679 385 633 369 587 378
+           C531 390 486 380 433 372
+           C366 362 303 375 246 369
+           C210 365 178 372 148 382 Z"
+        fill="#0b1f39"/>
+
+  <g fill="none" stroke="#1495ff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M742 270 L742 353 M713 353 L770 353 M724 353 L742 294 L760 353"/>
+    <circle cx="742" cy="259" r="18"/>
+    <path d="M742 241 L742 220 M760 248 L778 235 M760 270 L780 282 M724 248 L706 235 M724 270 L704 282"/>
+  </g>
+
+  <path d="M597 337
+           C610 319 620 304 632 287
+           L628 261 L641 278
+           L653 257 L654 287
+           C672 292 687 302 699 315
+           C715 332 731 347 752 354
+           C770 360 789 359 809 354
+           C800 367 788 376 773 382
+           C751 390 728 390 706 384
+           L684 377
+           C680 396 678 415 682 433
+           L701 459
+           L686 462
+           L669 442
+           L649 457
+           L632 457
+           L648 440
+           C631 427 620 412 614 394
+           L598 404
+           L589 397
+           L603 379
+           C591 368 589 352 597 337 Z"
+        fill="#1495ff"/>
+
+  <path d="M236 419
+           H397
+           C435 419 457 443 457 480
+           V595
+           C457 632 435 656 397 656
+           H236
+           C198 656 176 632 176 595
+           V480
+           C176 443 198 419 236 419 Z
+           M247 463
+           C232 463 224 472 224 488
+           V587
+           C224 603 232 612 247 612
+           H386
+           C401 612 409 603 409 587
+           V488
+           C409 472 401 463 386 463 Z"
+        fill="#f7fbff"/>
+
+  <path d="M493 419 H815 V466 H581
+           C565 466 556 474 556 488
+           C556 502 565 510 581 510
+           H744
+           C795 510 822 536 822 583
+           C822 629 794 656 744 656
+           H493 V608 H733
+           C750 608 759 600 759 586
+           C759 572 750 564 733 564
+           H571
+           C518 564 491 538 491 491
+           C491 444 518 419 571 419 Z"
+        fill="url(#osBlue)"/>
+
+  <g fill="#f7fbff">
+    <path d="M202 704 H222 V746 H202 Z M230 704 H250 V746 H230 Z
+             M258 704 H278 V746 H258 Z M286 704 H306 V746 H286 Z
+             M314 704 H334 V746 H314 Z"/>
+  </g>
+  <text x="512" y="744"
+        text-anchor="middle"
+        font-family="DejaVu Sans, Arial, sans-serif"
+        font-weight="700"
+        font-size="66"
+        letter-spacing="7"
+        fill="#f7fbff">OUTBACK <tspan fill="#1495ff">OS</tspan></text>
+
+  <text x="512" y="818"
+        text-anchor="middle"
+        font-family="DejaVu Sans, Arial, sans-serif"
+        font-weight="700"
+        font-size="31"
+        letter-spacing="5"
+        fill="#1495ff">BUILT FOR WHERE</text>
+  <text x="512" y="860"
+        text-anchor="middle"
+        font-family="DejaVu Sans, Arial, sans-serif"
+        font-weight="700"
+        font-size="31"
+        letter-spacing="5"
+        fill="#1495ff">THE SIGNAL ENDS</text>
+</svg>
