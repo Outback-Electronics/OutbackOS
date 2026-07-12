@@ -64,9 +64,11 @@ Window {
 
         MouseArea {
             anchors.fill: parent
+            enabled: !autoExit
             onClicked: introSequence.start()
         }
 
+        Keys.enabled: !autoExit
         Keys.onPressed: (event) => {
             if (event.key === Qt.Key_Space) {
                 introSequence.start()
@@ -211,6 +213,7 @@ Window {
     }
 
     Text {
+        visible: !autoExit
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 24
