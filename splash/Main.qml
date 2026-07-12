@@ -18,11 +18,16 @@ Window {
     flags: autoExit ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
     visibility: autoExit ? Window.FullScreen : Window.Windowed
 
-    // Genuine pixel-exact vector reconstruction of the approved logo, split
-    // into independently-loadable object files (splash/layers/*.svg) - every
-    // shape (ring, sky, stars, kangaroo, windmill, mark-space, and every
-    // individual letter) is its own file, verified to recombine into the
-    // source image with zero differing pixels. No bitmap asset anywhere.
+    // Pixel-exact reconstruction of the approved logo, split into
+    // independently-loadable layer files (splash/layers/*.png) - every shape
+    // (ring, sky, stars, kangaroo, windmill, mark-space, and every individual
+    // letter) is its own file, verified to recombine into the source image
+    // with zero differing pixels. Previously stored as per-pixel <rect> SVGs
+    // (~9MB, 150k+ elements) - QtSvg parsed those synchronously on the GUI
+    // thread, which could stall long enough on constrained boot hardware
+    // that the layers never got a chance to paint before the splash exited.
+    // PNG decodes near-instantly and layers below load asynchronously as
+    // additional headroom.
     readonly property real badgeSize: 380
     readonly property real aspect: 461 / 492
 
@@ -59,9 +64,11 @@ Window {
 
         MouseArea {
             anchors.fill: parent
+            enabled: !autoExit
             onClicked: introSequence.start()
         }
 
+        Keys.enabled: !autoExit
         Keys.onPressed: (event) => {
             if (event.key === Qt.Key_Space) {
                 introSequence.start()
@@ -117,24 +124,25 @@ Window {
         width: window.badgeSize
         height: window.badgeSize * window.aspect
 
-        Image { anchors.fill: parent; source: "layers/background.svg"; smooth: true }
+        Image { anchors.fill: parent; source: "layers/background.png"; smooth: true; asynchronous: true }
 
         Item {
             id: sceneLayer
             anchors.fill: parent
             opacity: 0
 
-            Image { anchors.fill: parent; source: "layers/sky.svg"; smooth: true }
-            Image { anchors.fill: parent; source: "layers/stars.svg"; smooth: true }
-            Image { anchors.fill: parent; source: "layers/kangaroo.svg"; smooth: true }
-            Image { anchors.fill: parent; source: "layers/windmill.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/sky.png"; smooth: true; asynchronous: true }
+            Image { anchors.fill: parent; source: "layers/stars.png"; smooth: true; asynchronous: true }
+            Image { anchors.fill: parent; source: "layers/kangaroo.png"; smooth: true; asynchronous: true }
+            Image { anchors.fill: parent; source: "layers/windmill.png"; smooth: true; asynchronous: true }
         }
 
         Image {
             id: ringLayer
             anchors.fill: parent
-            source: "layers/ring.svg"
+            source: "layers/ring.png"
             smooth: true
+            asynchronous: true
             opacity: 0
             scale: 0.9
 
@@ -154,17 +162,18 @@ Window {
             opacity: 0
             scale: 0.92
 
-            Image { anchors.fill: parent; source: "layers/mark-space.svg"; smooth: true }
-            Image { anchors.fill: parent; source: "layers/letter-o-big.svg"; smooth: true }
-            Image { anchors.fill: parent; source: "layers/letter-s-big.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/mark-space.png"; smooth: true; asynchronous: true }
+            Image { anchors.fill: parent; source: "layers/letter-o-big.png"; smooth: true; asynchronous: true }
+            Image { anchors.fill: parent; source: "layers/letter-s-big.png"; smooth: true; asynchronous: true }
 
             Repeater {
                 model: window.outbackLetters
                 delegate: Image {
                     required property string modelData
                     anchors.fill: parent
-                    source: "layers/" + modelData + ".svg"
+                    source: "layers/" + modelData + ".png"
                     smooth: true
+                    asynchronous: true
                 }
             }
 
@@ -173,8 +182,9 @@ Window {
                 delegate: Image {
                     required property string modelData
                     anchors.fill: parent
-                    source: "layers/" + modelData + ".svg"
+                    source: "layers/" + modelData + ".png"
                     smooth: true
+                    asynchronous: true
                 }
             }
 
@@ -183,8 +193,9 @@ Window {
                 delegate: Image {
                     required property string modelData
                     anchors.fill: parent
-                    source: "layers/" + modelData + ".svg"
+                    source: "layers/" + modelData + ".png"
                     smooth: true
+                    asynchronous: true
                 }
             }
 
@@ -193,14 +204,16 @@ Window {
                 delegate: Image {
                     required property string modelData
                     anchors.fill: parent
-                    source: "layers/" + modelData + ".svg"
+                    source: "layers/" + modelData + ".png"
                     smooth: true
+                    asynchronous: true
                 }
             }
         }
     }
 
     Text {
+        visible: !autoExit
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 24
