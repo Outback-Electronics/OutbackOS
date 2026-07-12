@@ -145,15 +145,6 @@ Window {
             asynchronous: true
             opacity: 0
             scale: 0.9
-
-            SequentialAnimation on rotation {
-                id: idleSpin
-
-                loops: Animation.Infinite
-                running: false
-
-                NumberAnimation { from: 0; to: 360; duration: 9000; easing.type: Easing.Linear }
-            }
         }
 
         Item {
@@ -227,7 +218,6 @@ Window {
         id: introSequence
 
         PropertyAction { target: breatheAnimation; property: "running"; value: false }
-        PropertyAction { target: idleSpin; property: "running"; value: false }
         PropertyAction { target: glowCanvas; property: "intensity"; value: 0.5 }
         PropertyAction { target: sceneLayer; property: "opacity"; value: 0 }
         PropertyAction { target: ringLayer; property: "opacity"; value: 0 }
@@ -281,7 +271,6 @@ Window {
         }
 
         PropertyAction { target: breatheAnimation; property: "running"; value: true }
-        PropertyAction { target: idleSpin; property: "running"; value: true }
 
         onRunningChanged: {
             if (!running && autoExit) {
