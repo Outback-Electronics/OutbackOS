@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+# labwc can only bind a key to running a command, not to calling into an
+# already-running process, so the Super key runs this script instead of
+# talking to outback-taskbar directly. outback-taskbar writes its own pid
+# here on startup; signal it and let SignalBridge (taskbar/SignalBridge.cpp)
+# turn that into a toggleStartMenuRequested() on its Qt event loop.
+
+pid_file="${XDG_RUNTIME_DIR:-/tmp}/outback-taskbar.pid"
+
+if [ -f "$pid_file" ]; then
+    kill -USR1 "$(cat "$pid_file")" 2>/dev/null || true
+fi

@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Qt.labs.settings
@@ -37,6 +38,23 @@ Window {
         property int accentIndex: 0
     }
 
+    StartMenu {
+        id: startMenu
+
+        surface: root.surface
+        surfaceRaised: root.surfaceRaised
+        primary: root.primary
+        textPrimary: root.textPrimary
+        textSecondary: root.textSecondary
+    }
+
+    Connections {
+        target: signalBridge
+        function onToggleStartMenuRequested() {
+            startMenu.toggle()
+        }
+    }
+
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 12
@@ -47,7 +65,7 @@ Window {
             Layout.preferredWidth: 40
             Layout.preferredHeight: 40
             radius: 12
-            color: homeMouse.containsMouse ? root.surfaceRaised : "transparent"
+            color: startMouse.containsMouse ? root.surfaceRaised : "transparent"
 
             Text {
                 anchors.centerIn: parent
@@ -58,20 +76,24 @@ Window {
             }
 
             MouseArea {
-                id: homeMouse
+                id: startMouse
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    const windows = ToplevelManager.toplevels
-                    for (let i = 0; i < windows.length; i++) {
-                        if (windows[i].appId === "outback-shell") {
-                            windows[i].requestActivate()
-                            return
-                        }
-                    }
-                }
+                onClicked: startMenu.toggle()
             }
+        }
+
+        PinnedButton {
+            symbol: "T"
+            label: "Terminal"
+            command: "/usr/bin/outback-terminal"
+        }
+
+        PinnedButton {
+            symbol: "F"
+            label: "Files"
+            command: "/usr/bin/outback-files"
         }
 
         Rectangle {
@@ -92,9 +114,8 @@ Window {
                 spacing: 8
 
                 Repeater {
-                    // The desktop/launcher ("outback-shell") is reachable via
-                    // the home button to the left, not as a running-app entry
-                    // here, so it is excluded from this list.
+                    // The desktop background ("outback-shell") is not a
+                    // real app window, so it is excluded from this list.
                     model: ToplevelManager.toplevels.filter(function (toplevel) {
                         return toplevel.appId !== "outback-shell"
                     })
@@ -187,6 +208,40 @@ Window {
                 repeat: true
                 onTriggered: clock.updateClock()
             }
+        }
+    }
+
+    component PinnedButton: Rectangle {
+        id: pinned
+
+        required property string symbol
+        required property string label
+        required property string command
+
+        Layout.preferredWidth: 40
+        Layout.preferredHeight: 40
+        radius: 12
+        color: pinnedMouse.containsMouse ? root.surfaceRaised : "transparent"
+
+        Text {
+            anchors.centerIn: parent
+            text: pinned.symbol
+            color: root.textPrimary
+            font.pixelSize: 15
+            font.bold: true
+        }
+
+        MouseArea {
+            id: pinnedMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: systemLauncher.launch(pinned.command)
+
+            ToolTip.visible: containsMouse
+            ToolTip.text: pinned.label
+            ToolTip.delay: 500
         }
     }
 }

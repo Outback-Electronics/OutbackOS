@@ -174,7 +174,7 @@ ApplicationWindow {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Choose an application"
+                text: "Press the Start button or the Windows key to open your apps."
                 color: root.textSecondary
                 font.pixelSize: 18
             }
@@ -182,33 +182,9 @@ ApplicationWindow {
 
         GridLayout {
             Layout.alignment: Qt.AlignHCenter
-            columns: 4
+            columns: 1
             columnSpacing: 20
             rowSpacing: 20
-
-            AppTile {
-                title: "Files"
-                symbol: "F"
-                command: "/usr/bin/outback-files"
-            }
-
-            AppTile {
-                title: "Browser"
-                symbol: "B"
-                command: "/usr/bin/outback-browser"
-            }
-
-            AppTile {
-                title: "Settings"
-                symbol: "S"
-                command: "/usr/bin/outback-settings"
-            }
-
-            AppTile {
-                title: "Terminal"
-                symbol: "T"
-                command: "/usr/bin/outback-terminal"
-            }
 
             AppTile {
                 title: "Install Outback OS"
@@ -216,20 +192,6 @@ ApplicationWindow {
                 command: ""
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
-            }
-
-            AppTile {
-                title: "Restart"
-                symbol: "R"
-                command: ""
-                isReboot: true
-            }
-
-            AppTile {
-                title: "Shut Down"
-                symbol: "P"
-                command: ""
-                isShutdown: true
             }
         }
 
@@ -264,8 +226,6 @@ ApplicationWindow {
         required property string symbol
         required property string command
         property bool isInstaller: false
-        property bool isReboot: false
-        property bool isShutdown: false
 
         Layout.preferredWidth: 160
         Layout.preferredHeight: 145
@@ -335,20 +295,6 @@ ApplicationWindow {
                 if (tile.isInstaller) {
                     if (!systemLauncher.launchInstaller()) {
                         root.showError("Couldn't start the installer.")
-                    }
-                    return
-                }
-
-                if (tile.isReboot) {
-                    if (!systemLauncher.reboot()) {
-                        root.showError("Couldn't restart.")
-                    }
-                    return
-                }
-
-                if (tile.isShutdown) {
-                    if (!systemLauncher.shutdown()) {
-                        root.showError("Couldn't shut down.")
                     }
                     return
                 }
