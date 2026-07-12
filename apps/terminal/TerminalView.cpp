@@ -159,7 +159,7 @@ void TerminalView::paint(QPainter *painter)
 
             if (charCount > 0) {
                 const QString text = QString::fromUcs4(
-                    cell.chars,
+                    reinterpret_cast<const char32_t *>(cell.chars),
                     charCount
                 );
 

@@ -9,7 +9,7 @@ extern "C" {
 #include <vterm.h>
 }
 
-class TerminalView final : public QQuickPaintedItem
+class TerminalView : public QQuickPaintedItem
 {
     Q_OBJECT
     QML_ELEMENT
