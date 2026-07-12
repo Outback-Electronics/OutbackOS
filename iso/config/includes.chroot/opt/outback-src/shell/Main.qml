@@ -47,6 +47,19 @@ ApplicationWindow {
 
     property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
 
+    property string statusMessage: ""
+
+    function showError(message) {
+        statusMessage = message
+        statusMessageTimer.restart()
+    }
+
+    Timer {
+        id: statusMessageTimer
+        interval: 4000
+        onTriggered: root.statusMessage = ""
+    }
+
     Settings {
         id: prefs
 
@@ -161,7 +174,7 @@ ApplicationWindow {
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Choose an application"
+                text: "Press the Start button or the Windows key to open your apps."
                 color: root.textSecondary
                 font.pixelSize: 18
             }
@@ -169,33 +182,9 @@ ApplicationWindow {
 
         GridLayout {
             Layout.alignment: Qt.AlignHCenter
-            columns: 4
+            columns: 1
             columnSpacing: 20
             rowSpacing: 20
-
-            AppTile {
-                title: "Files"
-                symbol: "F"
-                command: "/usr/bin/outback-files"
-            }
-
-            AppTile {
-                title: "Browser"
-                symbol: "B"
-                command: "/usr/bin/outback-browser"
-            }
-
-            AppTile {
-                title: "Settings"
-                symbol: "S"
-                command: "/usr/bin/outback-settings"
-            }
-
-            AppTile {
-                title: "Terminal"
-                symbol: "T"
-                command: "/usr/bin/outback-terminal"
-            }
 
             AppTile {
                 title: "Install Outback OS"
@@ -204,24 +193,29 @@ ApplicationWindow {
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
             }
-
-            AppTile {
-                title: "Restart"
-                symbol: "R"
-                command: ""
-                isReboot: true
-            }
-
-            AppTile {
-                title: "Shut Down"
-                symbol: "P"
-                command: ""
-                isShutdown: true
-            }
         }
 
         Item {
             Layout.fillHeight: true
+        }
+
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            visible: root.statusMessage.length > 0
+            radius: 10
+            color: "#4A1F1F"
+            border.color: "#C0392B"
+            border.width: 1
+            implicitWidth: statusText.implicitWidth + 32
+            implicitHeight: statusText.implicitHeight + 20
+
+            Text {
+                id: statusText
+                anchors.centerIn: parent
+                text: root.statusMessage
+                color: "#F4F6F7"
+                font.pixelSize: 14
+            }
         }
     }
 
@@ -232,8 +226,6 @@ ApplicationWindow {
         required property string symbol
         required property string command
         property bool isInstaller: false
-        property bool isReboot: false
-        property bool isShutdown: false
 
         Layout.preferredWidth: 160
         Layout.preferredHeight: 145
@@ -302,32 +294,18 @@ ApplicationWindow {
             onClicked: {
                 if (tile.isInstaller) {
                     if (!systemLauncher.launchInstaller()) {
-                        console.log("Failed to launch installer")
-                    }
-                    return
-                }
-
-                if (tile.isReboot) {
-                    if (!systemLauncher.reboot()) {
-                        console.log("Failed to restart")
-                    }
-                    return
-                }
-
-                if (tile.isShutdown) {
-                    if (!systemLauncher.shutdown()) {
-                        console.log("Failed to shut down")
+                        root.showError("Couldn't start the installer.")
                     }
                     return
                 }
 
                 if (tile.command.length === 0) {
-                    console.log(tile.title, "is not built yet")
+                    root.showError(tile.title + " isn't available yet.")
                     return
                 }
 
                 if (!systemLauncher.launch(tile.command)) {
-                    console.log("Failed to launch:", tile.command)
+                    root.showError("Couldn't open " + tile.title + ".")
                 }
             }
         }

@@ -1,6 +1,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QUrl>
+
+#include "SignalBridge.h"
+#include "SystemLauncher.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +21,21 @@ int main(int argc, char *argv[])
         "outbackelectronics.com.au"
     );
 
+    SystemLauncher launcher;
+    SignalBridge signalBridge;
+    SignalBridge::writePidFile();
+
     QQmlApplicationEngine engine;
+
+    engine.rootContext()->setContextProperty(
+        "systemLauncher",
+        &launcher
+    );
+
+    engine.rootContext()->setContextProperty(
+        "signalBridge",
+        &signalBridge
+    );
 
     QObject::connect(
         &engine,

@@ -14,6 +14,12 @@
 
   <keyboard>
     <default />
+    <keybind key="Super_L">
+      <action name="Execute" command="/usr/bin/outback-toggle-start-menu" />
+    </keybind>
+    <keybind key="Super_R">
+      <action name="Execute" command="/usr/bin/outback-toggle-start-menu" />
+    </keybind>
   </keyboard>
 
   <mouse>

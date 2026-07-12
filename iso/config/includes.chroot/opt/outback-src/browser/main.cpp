@@ -4,6 +4,7 @@
 #include <QUrl>
 
 #include <QtWebEngineQuick>
+#include <QWebEngineUrlScheme>
 
 #include "BrowserBackend.h"
 
@@ -28,6 +29,19 @@ int main(int argc, char *argv[])
         "OptimizationGuideModelDownloading,MediaRouter,"
         "AutofillServerCommunication,Translate"
     );
+
+    // hardenedProfile (Main.qml) is off-the-record, and Qt 6 no longer
+    // grants off-the-record profiles local access to qrc: content by
+    // default - without this, start.html loads as a blank page. Must be
+    // registered before QGuiApplication is constructed.
+    QWebEngineUrlScheme qrcScheme(QByteArrayLiteral("qrc"));
+    qrcScheme.setFlags(
+        QWebEngineUrlScheme::SecureScheme
+        | QWebEngineUrlScheme::LocalAccessAllowed
+        | QWebEngineUrlScheme::CorsEnabled
+        | QWebEngineUrlScheme::ViewSourceAllowed
+    );
+    QWebEngineUrlScheme::registerScheme(qrcScheme);
 
     QtWebEngineQuick::initialize();
 

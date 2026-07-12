@@ -3,7 +3,6 @@ set -eu
 
 systemctl enable NetworkManager.service
 systemctl enable bluetooth.service
-systemctl enable outback-session.service
 systemctl set-default graphical.target
 
 mkdir -p /etc/NetworkManager/conf.d
