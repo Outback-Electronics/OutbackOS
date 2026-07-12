@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Outback OS
+Comment=Outback OS Wayland Desktop
+Exec=/usr/local/bin/outback-session
+Type=Application
+DesktopNames=OutbackOS

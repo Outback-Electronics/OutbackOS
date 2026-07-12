@@ -64,10 +64,16 @@ build_outback_app \
     /tmp/outback-browser-build \
     outback-browser
 
+build_outback_app \
+    /opt/outback-src/taskbar \
+    /tmp/outback-taskbar-build \
+    outback-taskbar
+
 rm -rf \
     /tmp/outback-shell-build \
     /tmp/outback-settings-build \
     /tmp/outback-files-build \
     /tmp/outback-terminal-build \
     /tmp/outback-browser-build \
+    /tmp/outback-taskbar-build \
     /opt/outback-src

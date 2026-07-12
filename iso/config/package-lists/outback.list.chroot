@@ -13,9 +13,14 @@ sudo
 polkitd
 pkexec
 
-weston
+labwc
 xwayland
 wayland-protocols
+
+layer-shell-qt
+liblayershellqtinterface-dev
+liblayershellqtinterface6
+qml6-module-org-kde-layershell
 
 network-manager
 wpasupplicant
@@ -55,8 +60,11 @@ ninja-build
 pkg-config
 
 qt6-base-dev
+qt6-base-private-dev
 qt6-declarative-dev
 qt6-wayland
+qt6-wayland-dev
+qt6-wayland-private-dev
 
 qml6-module-qtqml
 qml6-module-qtqml-models

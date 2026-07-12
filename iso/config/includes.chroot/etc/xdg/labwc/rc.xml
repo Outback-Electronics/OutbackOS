@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<labwc_config>
+
+  <!--
+    Outback OS ships each app's own window chrome via labwc's
+    server-side decorations (title bar with iconify/maximize/close),
+    since the Qt/QML apps don't draw their own. See outback-taskbar
+    for the persistent taskbar that lists/switches/closes windows.
+  -->
+
+  <core>
+    <decoration>server</decoration>
+  </core>
+
+  <keyboard>
+    <default />
+  </keyboard>
+
+  <mouse>
+    <default />
+  </mouse>
+
+  <windowSwitcher show="true" preview="true" outlines="true">
+    <fields>
+      <field content="app_id" width="35%" />
+      <field content="title" width="65%" />
+    </fields>
+  </windowSwitcher>
+
+</labwc_config>

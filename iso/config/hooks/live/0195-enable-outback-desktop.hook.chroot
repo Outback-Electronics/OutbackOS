@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+systemctl enable sddm.service
+systemctl set-default graphical.target
+
+rm -rf /etc/systemd/system/getty@tty1.service.d
