@@ -26,3 +26,21 @@ polkit.addRule(function(action, subject) {
 
     return polkit.Result.NOT_HANDLED;
 });
+
+// NetworkManager is configured with auth-polkit=true, so nmcli's
+// "device wifi connect" (used by the Settings app to add/activate
+// connections) asks polkit for org.freedesktop.NetworkManager.* actions.
+// With no agent present to answer an auth_admin prompt, those requests
+// fail with "insufficient privileges". Grant them directly to the
+// outback user, same as the pkexec actions above.
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") !== 0) {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    if (subject.user !== "outback") {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    return polkit.Result.YES;
+});

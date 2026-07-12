@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE bool wifiEnabled() const;
     Q_INVOKABLE bool setWifiEnabled(bool enabled);
     Q_INVOKABLE QString activeNetwork() const;
+    Q_INVOKABLE QStringList savedWifiNetworks() const;
     Q_INVOKABLE void startWifiScan();
     Q_INVOKABLE bool connectWifi(
         const QString &ssid,

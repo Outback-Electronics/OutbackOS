@@ -21,6 +21,8 @@ qt_add_qml_module(outback-browser
     RESOURCE_PREFIX /
     QML_FILES
         Main.qml
+    RESOURCES
+        start.html
 )
 
 target_link_libraries(outback-browser

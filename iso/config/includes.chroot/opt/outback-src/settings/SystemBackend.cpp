@@ -257,6 +257,50 @@ QString SystemBackend::activeNetwork() const
 
 
 
+QStringList SystemBackend::savedWifiNetworks() const
+{
+    QStringList names;
+
+    const auto result = CommandRunner::run(
+        QStringLiteral("nmcli"),
+        {
+            QStringLiteral("-t"),
+            QStringLiteral("-f"),
+            QStringLiteral("NAME,TYPE"),
+            QStringLiteral("connection"),
+            QStringLiteral("show")
+        }
+    );
+
+    if (!result.succeeded()) {
+        return names;
+    }
+
+    const QStringList lines = result.standardOutput.split(
+        QLatin1Char('\n'),
+        Qt::SkipEmptyParts
+    );
+
+    for (const QString &line : lines) {
+        const int separator = line.lastIndexOf(QLatin1Char(':'));
+
+        if (separator <= 0) {
+            continue;
+        }
+
+        const QString type = line.mid(separator + 1);
+
+        if (
+            type == QStringLiteral("802-11-wireless")
+            || type == QStringLiteral("wifi")
+        ) {
+            names.append(line.left(separator));
+        }
+    }
+
+    return names;
+}
+
 bool SystemBackend::connectWifi(
     const QString &ssid,
     const QString &password

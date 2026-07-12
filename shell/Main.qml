@@ -8,7 +8,12 @@ ApplicationWindow {
     id: root
 
     visible: true
-    visibility: Window.FullScreen
+    // Maximized rather than FullScreen: on wlroots compositors (labwc) a
+    // true fullscreen surface is stacked above the layer-shell "top" layer,
+    // which would hide the always-on-top taskbar behind the desktop
+    // whenever it regains focus (e.g. after closing/minimising every app).
+    // Maximized respects the taskbar's reserved exclusion zone instead.
+    visibility: Window.Maximized
 
     title: "Outback OS"
 

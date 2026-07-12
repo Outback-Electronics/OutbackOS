@@ -31,11 +31,13 @@ ApplicationWindow {
         spellCheckEnabled: false
     }
 
+    readonly property string startPageUrl: "qrc:/Outback/Browser/start.html"
+
     ListModel {
         id: tabsModel
 
         ListElement {
-            url: "https://start.outbackos.local/"
+            url: "qrc:/Outback/Browser/start.html"
             title: "New Tab"
         }
     }
@@ -46,7 +48,7 @@ ApplicationWindow {
 
     function openNewTab(url) {
         tabsModel.append({
-            url: url && url.length > 0 ? url : "https://start.outbackos.local/",
+            url: url && url.length > 0 ? url : root.startPageUrl,
             title: "New Tab"
         })
         root.currentTabIndex = tabsModel.count - 1
@@ -226,22 +228,9 @@ ApplicationWindow {
                     settings.pluginsEnabled: false
 
                     Component.onCompleted: {
-                        const initialUrl = model.url
-
-                        if (
-                            initialUrl
-                            && initialUrl.indexOf("outbackos.local") === -1
-                        ) {
-                            webView.url = initialUrl
-                        } else {
-                            loadHtml(
-                                "<html><body style='background:#0D1115;color:#F4F6F7;"
-                                + "font-family:sans-serif;display:flex;align-items:center;"
-                                + "justify-content:center;height:100vh;margin:0'>"
-                                + "<h1>Outback Browser</h1></body></html>",
-                                "https://start.outbackos.local/"
-                            )
-                        }
+                        webView.url = model.url && model.url.length > 0
+                            ? model.url
+                            : root.startPageUrl
                     }
 
                     onTitleChanged: {
