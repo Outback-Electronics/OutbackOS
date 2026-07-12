@@ -12,18 +12,23 @@ ApplicationWindow {
     visible: true
 
     title: "Outback Settings"
-    color: "#0D1115"
+    color: isLightTheme ? "#F3F5F6" : "#0D1115"
 
-    property color sidebarColor: "#151B21"
-    property color surfaceColor: "#1B2229"
-    property color raisedColor: "#252E36"
+    property bool isLightTheme: prefs.themeIndex === 1
+
+    property color sidebarColor: isLightTheme ? "#E7ECEF" : "#151B21"
+    property color surfaceColor: isLightTheme ? "#FFFFFF" : "#1B2229"
+    property color raisedColor: isLightTheme ? "#DCE3E8" : "#252E36"
     property color primaryColor: accentColours[prefs.accentIndex]
-    property color textPrimaryColor: "#F4F6F7"
-    property color textSecondaryColor: "#AEB8C0"
+    property color textPrimaryColor: isLightTheme ? "#101418" : "#F4F6F7"
+    property color textSecondaryColor: isLightTheme ? "#4B5560" : "#AEB8C0"
 
     property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
     property var accentNames: ["Outback Orange", "Ocean Blue", "Spinifex Green"]
     property var scalingOptions: ["100%", "125%", "150%", "175%", "200%"]
+    property var themeNames: ["Outback Dark", "Outback Light"]
+    property var autoLockOptions: ["Never", "5 minutes", "10 minutes", "30 minutes"]
+    property var autoLockMinutes: [0, 5, 10, 30]
 
     Settings {
         id: prefs
@@ -33,6 +38,23 @@ ApplicationWindow {
         property int accentIndex: 0
         property int scalingIndex: 0
         property bool animationsEnabled: true
+        property int themeIndex: 0
+    }
+
+    Settings {
+        id: securityPrefs
+
+        category: "security"
+
+        property int autoLockIndex: 2
+    }
+
+    Settings {
+        id: updatePrefs
+
+        category: "updates"
+
+        property string lastCheckedAt: ""
     }
 
     property var categories: [
@@ -72,12 +94,11 @@ ApplicationWindow {
                         radius: 13
                         color: root.primaryColor
 
-                        Text {
+                        Image {
                             anchors.centerIn: parent
-                            text: "O"
-                            color: "white"
-                            font.pixelSize: 25
-                            font.bold: true
+                            source: "icons/outback-mark.svg"
+                            sourceSize.width: 22
+                            sourceSize.height: 22
                         }
                     }
 
@@ -569,12 +590,17 @@ ApplicationWindow {
 
                 SettingCard {
                     title: "Theme"
-                    description: "Outback Dark · additional themes coming in a future release"
+                    description: root.themeNames[themeBox.currentIndex]
+                                 + " · shell and taskbar stay on the fixed dark theme"
 
                     ComboBox {
-                        model: ["Outback Dark"]
-                        currentIndex: 0
-                        enabled: false
+                        id: themeBox
+                        model: root.themeNames
+                        currentIndex: prefs.themeIndex
+
+                        onActivated: {
+                            prefs.themeIndex = currentIndex
+                        }
                     }
                 }
 
@@ -644,8 +670,12 @@ ApplicationWindow {
             }
 
             SettingsPage {
+                id: privacyPage
+
                 pageTitle: "Privacy"
                 pageDescription: "Control permissions and data collection."
+
+                property var savedNetworks: systemBackend.savedWifiNetworks()
 
                 SettingCard {
                     title: "Location services"
@@ -654,6 +684,47 @@ ApplicationWindow {
                     Switch {
                         checked: false
                         enabled: false
+                    }
+                }
+
+                SettingCard {
+                    title: "Saved Wi-Fi networks"
+                    description: privacyPage.savedNetworks.length
+                                  + " network(s) remembered on this device"
+
+                    Button {
+                        text: "Forget all"
+                        enabled: privacyPage.savedNetworks.length > 0
+
+                        onClicked: {
+                            const names = privacyPage.savedNetworks
+                            for (let i = 0; i < names.length; i++) {
+                                systemBackend.forgetNetwork(names[i])
+                            }
+                            privacyPage.savedNetworks = systemBackend.savedWifiNetworks()
+                        }
+                    }
+                }
+
+                SettingCard {
+                    title: "Lock screen"
+                    description: "Lock now, or automatically after a period of inactivity"
+
+                    ComboBox {
+                        model: root.autoLockOptions
+                        currentIndex: securityPrefs.autoLockIndex
+
+                        onActivated: {
+                            securityPrefs.autoLockIndex = currentIndex
+                            systemBackend.setAutoLockMinutes(
+                                root.autoLockMinutes[currentIndex]
+                            )
+                        }
+                    }
+
+                    Button {
+                        text: "Lock now"
+                        onClicked: systemBackend.lockScreenNow()
                     }
                 }
             }
@@ -675,6 +746,9 @@ ApplicationWindow {
 
                             updateStatus.text =
                                 systemBackend.checkForUpdates()
+
+                            updatePrefs.lastCheckedAt =
+                                Qt.formatDateTime(new Date(), "d MMM yyyy, h:mm AP")
                         }
                     }
                 }
@@ -684,6 +758,38 @@ ApplicationWindow {
                     text: ""
                     color: root.textSecondaryColor
                     font.pixelSize: 14
+                }
+
+                SettingCard {
+                    title: "Install updates"
+                    description: "Downloads and applies any available packages"
+
+                    Button {
+                        text: systemBackend.installingUpdates
+                              ? "Installing..."
+                              : "Install updates"
+                        enabled: !systemBackend.installingUpdates
+
+                        onClicked: {
+                            installStatus.text = "Installing updates..."
+                            systemBackend.installUpdates()
+                        }
+                    }
+                }
+
+                Text {
+                    id: installStatus
+                    text: ""
+                    color: root.textSecondaryColor
+                    font.pixelSize: 14
+                }
+
+                Text {
+                    text: updatePrefs.lastCheckedAt.length > 0
+                          ? "Last checked " + updatePrefs.lastCheckedAt
+                          : "Not checked yet this session"
+                    color: root.textSecondaryColor
+                    font.pixelSize: 13
                 }
             }
 
@@ -850,6 +956,10 @@ ApplicationWindow {
                     ? error
                     : "Could not connect to " + ssid
             }
+        }
+
+        function onUpdatesInstallFinished(success, message) {
+            installStatus.text = message
         }
 
         function onBluetoothScanFinished(devices, error) {

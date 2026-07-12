@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick WaylandClient)
 find_package(LayerShellQt REQUIRED)
 
+find_library(PAM_LIBRARY NAMES pam REQUIRED)
+
 qt_standard_project_setup(REQUIRES 6.5)
 
 if(NOT DEFINED OUTBACK_COMMON_DIR)
@@ -24,6 +26,8 @@ qt_add_executable(outback-taskbar
     ToplevelManager.h
     SignalBridge.cpp
     SignalBridge.h
+    LockBackend.cpp
+    LockBackend.h
 )
 
 qt6_generate_wayland_protocol_client_sources(outback-taskbar
@@ -40,6 +44,7 @@ qt_add_qml_module(outback-taskbar
         Main.qml
         StartMenu.qml
         Apps.qml
+        LockScreen.qml
     SOURCES
         ForeignToplevel.cpp
         ForeignToplevel.h
@@ -47,6 +52,18 @@ qt_add_qml_module(outback-taskbar
         ToplevelManager.h
         SignalBridge.cpp
         SignalBridge.h
+        LockBackend.cpp
+        LockBackend.h
+    RESOURCES
+        icons/outback-mark.svg
+        icons/terminal.svg
+        icons/folder.svg
+        icons/gear.svg
+        icons/globe.svg
+        icons/lock.svg
+        icons/signout.svg
+        icons/restart.svg
+        icons/power.svg
 )
 
 target_link_libraries(outback-taskbar
@@ -55,6 +72,7 @@ target_link_libraries(outback-taskbar
         Qt6::WaylandClient
         LayerShellQt::Interface
         outback-common
+        ${PAM_LIBRARY}
 )
 
 install(

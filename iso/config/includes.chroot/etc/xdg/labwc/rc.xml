@@ -20,6 +20,21 @@
     <keybind key="Super_R">
       <action name="Execute" command="/usr/bin/outback-toggle-start-menu" />
     </keybind>
+    <keybind key="W-l">
+      <action name="Execute" command="/usr/bin/outback-lock" />
+    </keybind>
+    <keybind key="W-Left">
+      <action name="SnapToEdge" direction="left" />
+    </keybind>
+    <keybind key="W-Right">
+      <action name="SnapToEdge" direction="right" />
+    </keybind>
+    <keybind key="W-Up">
+      <action name="SnapToEdge" direction="up" />
+    </keybind>
+    <keybind key="W-Down">
+      <action name="SnapToEdge" direction="down" />
+    </keybind>
   </keyboard>
 
   <mouse>

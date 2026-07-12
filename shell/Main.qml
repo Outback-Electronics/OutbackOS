@@ -101,12 +101,11 @@ ApplicationWindow {
                 radius: 14
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "O"
-                    color: "white"
-                    font.pixelSize: 30
-                    font.bold: true
+                    source: "icons/outback-mark.svg"
+                    sourceSize.width: 26
+                    sourceSize.height: 26
                 }
             }
 
@@ -188,7 +187,7 @@ ApplicationWindow {
 
             AppTile {
                 title: "Install Outback OS"
-                symbol: "I"
+                icon: "icons/download.svg"
                 command: ""
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
@@ -223,7 +222,7 @@ ApplicationWindow {
         id: tile
 
         required property string title
-        required property string symbol
+        required property string icon
         required property string command
         property bool isInstaller: false
 
@@ -266,12 +265,11 @@ ApplicationWindow {
                 radius: 18
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: tile.symbol
-                    color: "white"
-                    font.pixelSize: 29
-                    font.bold: true
+                    source: tile.icon
+                    sourceSize.width: 30
+                    sourceSize.height: 30
                 }
             }
 

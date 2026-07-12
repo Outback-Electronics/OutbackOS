@@ -3,3 +3,9 @@
 OUTBACK_SPLASH_AUTOEXIT=1 outback-splash
 outback-shell &
 outback-taskbar &
+
+# Screensaver/auto-lock: the Settings app's Privacy page can change this
+# timeout later (SystemBackend::setAutoLockMinutes), which just kills and
+# respawns this process with a new value. 10 minutes is the default until
+# then.
+swayidle -w timeout 600 /usr/bin/outback-lock &

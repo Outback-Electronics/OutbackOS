@@ -47,12 +47,32 @@ Window {
         textPrimary: root.textPrimary
         textSecondary: root.textSecondary
         taskbarHeight: root.height
+
+        onLockRequested: root.lock()
+    }
+
+    LockScreen {
+        id: lockScreen
+
+        surface: root.surface
+        surfaceRaised: root.surfaceRaised
+        primary: root.primary
+        textPrimary: root.textPrimary
+        textSecondary: root.textSecondary
+    }
+
+    function lock() {
+        startMenu.close()
+        lockScreen.show()
     }
 
     Connections {
         target: signalBridge
         function onToggleStartMenuRequested() {
             startMenu.toggle()
+        }
+        function onLockRequested() {
+            root.lock()
         }
     }
 
@@ -66,14 +86,18 @@ Window {
             Layout.preferredWidth: 40
             Layout.preferredHeight: 40
             radius: 12
-            color: startMouse.containsMouse ? root.surfaceRaised : "transparent"
+            color: root.primary
+            opacity: startMouse.containsMouse ? 0.85 : 1.0
 
-            Text {
+            Behavior on opacity {
+                NumberAnimation { duration: 120 }
+            }
+
+            Image {
                 anchors.centerIn: parent
-                text: "O"
-                color: root.primary
-                font.pixelSize: 19
-                font.bold: true
+                source: "icons/outback-mark.svg"
+                sourceSize.width: 20
+                sourceSize.height: 20
             }
 
             MouseArea {
@@ -93,7 +117,7 @@ Window {
 
             delegate: PinnedButton {
                 required property var modelData
-                symbol: modelData.symbol
+                icon: modelData.icon
                 label: modelData.label
                 command: modelData.command
             }
@@ -217,7 +241,7 @@ Window {
     component PinnedButton: Rectangle {
         id: pinned
 
-        required property string symbol
+        required property string icon
         required property string label
         required property string command
 
@@ -226,12 +250,11 @@ Window {
         radius: 12
         color: pinnedMouse.containsMouse ? root.surfaceRaised : "transparent"
 
-        Text {
+        Image {
             anchors.centerIn: parent
-            text: pinned.symbol
-            color: root.textPrimary
-            font.pixelSize: 15
-            font.bold: true
+            source: pinned.icon
+            sourceSize.width: 18
+            sourceSize.height: 18
         }
 
         MouseArea {
