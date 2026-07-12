@@ -47,6 +47,19 @@ ApplicationWindow {
 
     property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
 
+    property string statusMessage: ""
+
+    function showError(message) {
+        statusMessage = message
+        statusMessageTimer.restart()
+    }
+
+    Timer {
+        id: statusMessageTimer
+        interval: 4000
+        onTriggered: root.statusMessage = ""
+    }
+
     Settings {
         id: prefs
 
@@ -223,6 +236,25 @@ ApplicationWindow {
         Item {
             Layout.fillHeight: true
         }
+
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            visible: root.statusMessage.length > 0
+            radius: 10
+            color: "#4A1F1F"
+            border.color: "#C0392B"
+            border.width: 1
+            implicitWidth: statusText.implicitWidth + 32
+            implicitHeight: statusText.implicitHeight + 20
+
+            Text {
+                id: statusText
+                anchors.centerIn: parent
+                text: root.statusMessage
+                color: "#F4F6F7"
+                font.pixelSize: 14
+            }
+        }
     }
 
     component AppTile: Rectangle {
@@ -302,32 +334,32 @@ ApplicationWindow {
             onClicked: {
                 if (tile.isInstaller) {
                     if (!systemLauncher.launchInstaller()) {
-                        console.log("Failed to launch installer")
+                        root.showError("Couldn't start the installer.")
                     }
                     return
                 }
 
                 if (tile.isReboot) {
                     if (!systemLauncher.reboot()) {
-                        console.log("Failed to restart")
+                        root.showError("Couldn't restart.")
                     }
                     return
                 }
 
                 if (tile.isShutdown) {
                     if (!systemLauncher.shutdown()) {
-                        console.log("Failed to shut down")
+                        root.showError("Couldn't shut down.")
                     }
                     return
                 }
 
                 if (tile.command.length === 0) {
-                    console.log(tile.title, "is not built yet")
+                    root.showError(tile.title + " isn't available yet.")
                     return
                 }
 
                 if (!systemLauncher.launch(tile.command)) {
-                    console.log("Failed to launch:", tile.command)
+                    root.showError("Couldn't open " + tile.title + ".")
                 }
             }
         }
