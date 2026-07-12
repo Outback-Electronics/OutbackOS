@@ -15,4 +15,5 @@ public:
     Q_INVOKABLE bool isInstallerAvailable() const;
     Q_INVOKABLE bool reboot();
     Q_INVOKABLE bool shutdown();
+    Q_INVOKABLE bool signOut();
 };
