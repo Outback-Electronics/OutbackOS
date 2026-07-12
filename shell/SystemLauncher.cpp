@@ -36,3 +36,23 @@ bool SystemLauncher::launchInstaller()
         }
     );
 }
+
+bool SystemLauncher::reboot()
+{
+    return QProcess::startDetached(
+        QStringLiteral("systemctl"),
+        {
+            QStringLiteral("reboot")
+        }
+    );
+}
+
+bool SystemLauncher::shutdown()
+{
+    return QProcess::startDetached(
+        QStringLiteral("systemctl"),
+        {
+            QStringLiteral("poweroff")
+        }
+    );
+}
