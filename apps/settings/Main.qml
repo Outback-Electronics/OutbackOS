@@ -25,6 +25,14 @@ ApplicationWindow {
     property var accentNames: ["Outback Orange", "Ocean Blue", "Spinifex Green"]
     property var scalingOptions: ["100%", "125%", "150%", "175%", "200%"]
 
+    property var wallpaperPresets: [
+        { name: "Outback Dusk", top: "#182027", bottom: "#0D1115" },
+        { name: "Desert Glow", top: "#3A2418", bottom: "#120C08" },
+        { name: "Ocean Deep", top: "#152833", bottom: "#050B0F" },
+        { name: "Spinifex", top: "#1A2A1E", bottom: "#0A120C" },
+        { name: "Midnight", top: "#1A1A24", bottom: "#08080C" }
+    ]
+
     Settings {
         id: prefs
 
@@ -33,6 +41,7 @@ ApplicationWindow {
         property int accentIndex: 0
         property int scalingIndex: 0
         property bool animationsEnabled: true
+        property int wallpaperIndex: 0
     }
 
     property var categories: [
@@ -575,6 +584,45 @@ ApplicationWindow {
                         model: ["Outback Dark"]
                         currentIndex: 0
                         enabled: false
+                    }
+                }
+
+                SettingCard {
+                    title: "Wallpaper"
+                    description: root.wallpaperPresets[wallpaperRow.currentIndex].name
+
+                    Row {
+                        id: wallpaperRow
+
+                        property int currentIndex: prefs.wallpaperIndex
+
+                        spacing: 12
+
+                        Repeater {
+                            model: root.wallpaperPresets
+
+                            delegate: Rectangle {
+                                required property var modelData
+                                required property int index
+
+                                width: 46
+                                height: 36
+                                radius: 8
+                                border.width: wallpaperRow.currentIndex === index ? 3 : 0
+                                border.color: root.textPrimaryColor
+
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: modelData.top }
+                                    GradientStop { position: 1.0; color: modelData.bottom }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: prefs.wallpaperIndex = index
+                                }
+                            }
+                        }
                     }
                 }
 
