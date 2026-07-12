@@ -1,7 +1,4 @@
 #!/bin/sh
-# Executed by labwc once its config has been read. Launches the Outback
-# home screen and the persistent taskbar as background jobs; labwc does
-# not wait for this script, so each app is started detached.
 
-/usr/bin/outback-shell &
-/usr/bin/outback-taskbar &
+outback-shell &
+outback-taskbar &

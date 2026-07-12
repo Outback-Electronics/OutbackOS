@@ -1,0 +1,15 @@
+labwc
+sddm
+weston
+qt6-wayland
+wayland-protocols
+xdg-desktop-portal
+xdg-desktop-portal-wlr
+dbus-user-session
+pipewire
+pipewire-pulse
+wireplumber
+network-manager
+foot
+sddm-theme-debian-elarun
+seatd

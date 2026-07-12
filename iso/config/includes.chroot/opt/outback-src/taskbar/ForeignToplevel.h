@@ -47,7 +47,7 @@ signals:
 protected:
     void zwlr_foreign_toplevel_handle_v1_title(const QString &title) override;
     void zwlr_foreign_toplevel_handle_v1_app_id(const QString &app_id) override;
-    void zwlr_foreign_toplevel_handle_v1_state(const QByteArray &state) override;
+    void zwlr_foreign_toplevel_handle_v1_state(struct wl_array *state) override;
     void zwlr_foreign_toplevel_handle_v1_done() override;
     void zwlr_foreign_toplevel_handle_v1_closed() override;
 
