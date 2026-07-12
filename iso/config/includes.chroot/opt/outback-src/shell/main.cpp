@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QGuiApplication::setDesktopFileName("outback-shell");
     QGuiApplication::setApplicationName("Outback");
     QGuiApplication::setOrganizationName("Outback Electronics");
     QGuiApplication::setOrganizationDomain("outbackelectronics.com.au");

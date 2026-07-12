@@ -15,12 +15,29 @@ ApplicationWindow {
     // Maximized respects the taskbar's reserved exclusion zone instead.
     visibility: Window.Maximized
 
+    // The desktop shell is not an application: it must never present the
+    // usual title bar / iconify / maximize / close chrome, and it must
+    // never actually close short of a shutdown or restart (see onClosing
+    // below). FramelessWindowHint stops Qt requesting server-side
+    // decoration from labwc at all, the same way taskbar/Main.qml and
+    // splash/Main.qml opt out of it.
+    flags: Qt.FramelessWindowHint
+
     title: "Outback OS"
 
     minimumWidth: 1024
     minimumHeight: 600
 
     color: "#101418"
+
+    // Belt and braces: even without decoration there are other ways a
+    // close request can reach this window (Alt+F4, the window switcher,
+    // a stray wlr-foreign-toplevel close request). Refuse all of them —
+    // the only way out is Shut Down / Restart below, which end the
+    // session directly rather than closing this window.
+    onClosing: (close) => {
+        close.accepted = false
+    }
 
     property color surface: "#1B2229"
     property color surfaceRaised: "#252E36"
@@ -187,6 +204,20 @@ ApplicationWindow {
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
             }
+
+            AppTile {
+                title: "Restart"
+                symbol: "R"
+                command: ""
+                isReboot: true
+            }
+
+            AppTile {
+                title: "Shut Down"
+                symbol: "P"
+                command: ""
+                isShutdown: true
+            }
         }
 
         Item {
@@ -201,6 +232,8 @@ ApplicationWindow {
         required property string symbol
         required property string command
         property bool isInstaller: false
+        property bool isReboot: false
+        property bool isShutdown: false
 
         Layout.preferredWidth: 160
         Layout.preferredHeight: 145
@@ -270,6 +303,20 @@ ApplicationWindow {
                 if (tile.isInstaller) {
                     if (!systemLauncher.launchInstaller()) {
                         console.log("Failed to launch installer")
+                    }
+                    return
+                }
+
+                if (tile.isReboot) {
+                    if (!systemLauncher.reboot()) {
+                        console.log("Failed to restart")
+                    }
+                    return
+                }
+
+                if (tile.isShutdown) {
+                    if (!systemLauncher.shutdown()) {
+                        console.log("Failed to shut down")
                     }
                     return
                 }
