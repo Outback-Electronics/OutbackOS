@@ -8,7 +8,7 @@ Window {
     height: 600
     visible: true
     title: "Outback OS — Boot Splash"
-    color: "#020307"
+    color: "#03080f"
 
     // autoExit is a root context property set by main.cpp from
     // OUTBACK_SPLASH_AUTOEXIT, which the labwc autostart script sets for the
@@ -54,11 +54,7 @@ Window {
 
     Rectangle {
         anchors.fill: parent
-
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#05070c" }
-            GradientStop { position: 1.0; color: "#020307" }
-        }
+        color: "#03080f"
 
         focus: true
 
