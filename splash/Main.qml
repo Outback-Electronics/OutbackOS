@@ -10,12 +10,34 @@ Window {
     title: "Outback OS — Boot Splash Preview"
     color: "#030811"
 
-    // Real vector reconstruction of the approved logo (splash/layers/*.svg,
-    // traced from the source raster into genuine path data, then split into
-    // semantic layers by radial/spatial position so each can be animated
-    // independently). No bitmap asset is used at runtime.
+    // Genuine pixel-exact vector reconstruction of the approved logo, split
+    // into independently-loadable object files (splash/layers/*.svg) - every
+    // shape (ring, sky, stars, kangaroo, windmill, mark-space, and every
+    // individual letter) is its own file, verified to recombine into the
+    // source image with zero differing pixels. No bitmap asset anywhere.
     readonly property real badgeSize: 380
     readonly property real aspect: 461 / 492
+
+    readonly property var outbackLetters: [
+        "outback-letter-1", "outback-letter-2", "outback-letter-3",
+        "outback-letter-4", "outback-letter-5", "outback-letter-6",
+        "outback-letter-7"
+    ]
+    readonly property var osLetters: ["os-letter-1", "os-letter-2"]
+    readonly property var tagline1Letters: [
+        "tagline1-letter-1", "tagline1-letter-2", "tagline1-letter-3",
+        "tagline1-letter-4", "tagline1-letter-5", "tagline1-letter-6",
+        "tagline1-letter-7", "tagline1-letter-8", "tagline1-letter-9",
+        "tagline1-letter-10", "tagline1-letter-11", "tagline1-letter-12",
+        "tagline1-letter-13"
+    ]
+    readonly property var tagline2Letters: [
+        "tagline2-letter-1", "tagline2-letter-2", "tagline2-letter-3",
+        "tagline2-letter-4", "tagline2-letter-5", "tagline2-letter-6",
+        "tagline2-letter-7", "tagline2-letter-8", "tagline2-letter-9",
+        "tagline2-letter-10", "tagline2-letter-11", "tagline2-letter-12",
+        "tagline2-letter-13"
+    ]
 
     Rectangle {
         anchors.fill: parent
@@ -39,8 +61,6 @@ Window {
         }
     }
 
-    // Ambient glow, colour-matched to the ring (~#0898FD, sampled from the
-    // approved logo), sitting strictly behind the badge.
     Canvas {
         id: glowCanvas
 
@@ -89,28 +109,23 @@ Window {
         width: window.badgeSize
         height: window.badgeSize * window.aspect
 
-        Image {
-            id: backgroundLayer
-            anchors.fill: parent
-            source: "layers/background.svg"
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
+        Image { anchors.fill: parent; source: "layers/background.svg"; smooth: true }
 
-        Image {
+        Item {
             id: sceneLayer
             anchors.fill: parent
-            source: "layers/scene.svg"
-            fillMode: Image.PreserveAspectFit
-            smooth: true
             opacity: 0
+
+            Image { anchors.fill: parent; source: "layers/sky.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/stars.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/kangaroo.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/windmill.svg"; smooth: true }
         }
 
         Image {
             id: ringLayer
             anchors.fill: parent
             source: "layers/ring.svg"
-            fillMode: Image.PreserveAspectFit
             smooth: true
             opacity: 0
             scale: 0.9
@@ -125,14 +140,55 @@ Window {
             }
         }
 
-        Image {
+        Item {
             id: markLayer
             anchors.fill: parent
-            source: "layers/mark.svg"
-            fillMode: Image.PreserveAspectFit
-            smooth: true
             opacity: 0
             scale: 0.92
+
+            Image { anchors.fill: parent; source: "layers/mark-space.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/letter-o-big.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/letter-s-big.svg"; smooth: true }
+
+            Repeater {
+                model: window.outbackLetters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
+            }
+
+            Repeater {
+                model: window.osLetters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
+            }
+
+            Repeater {
+                model: window.tagline1Letters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
+            }
+
+            Repeater {
+                model: window.tagline2Letters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
+            }
         }
     }
 
