@@ -92,7 +92,12 @@ Window {
                 spacing: 8
 
                 Repeater {
-                    model: ToplevelManager.toplevels
+                    // The desktop/launcher ("outback-shell") is reachable via
+                    // the home button to the left, not as a running-app entry
+                    // here, so it is excluded from this list.
+                    model: ToplevelManager.toplevels.filter(function (toplevel) {
+                        return toplevel.appId !== "outback-shell"
+                    })
 
                     delegate: Rectangle {
                         id: entry

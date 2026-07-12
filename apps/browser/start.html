@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Getting Started with Outback OS</title>
+<style>
+    :root {
+        color-scheme: dark;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: #0D1115;
+        color: #F4F6F7;
+        font-family: -apple-system, "Segoe UI", Ubuntu, Cantarell, sans-serif;
+    }
+
+    .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 64px 32px 96px;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 8px;
+    }
+
+    .logo .mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #D9732F;
+    }
+
+    .logo .name {
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+    h1 {
+        font-size: 34px;
+        margin: 28px 0 6px;
+    }
+
+    .subtitle {
+        color: #AEB8C0;
+        font-size: 16px;
+        margin: 0 0 40px;
+    }
+
+    h2 {
+        font-size: 19px;
+        margin: 0 0 6px;
+        color: #F4F6F7;
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 40px;
+    }
+
+    .card {
+        background: #1B2229;
+        border-radius: 16px;
+        padding: 20px 22px;
+    }
+
+    .card p {
+        color: #AEB8C0;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .steps {
+        background: #1B2229;
+        border-radius: 16px;
+        padding: 8px 26px;
+        margin-bottom: 40px;
+    }
+
+    .steps li {
+        color: #E7ECEF;
+        font-size: 15px;
+        line-height: 1.6;
+        padding: 14px 0;
+        border-bottom: 1px solid #252E36;
+    }
+
+    .steps li:last-child {
+        border-bottom: none;
+    }
+
+    .steps b {
+        color: #F4F6F7;
+    }
+
+    .steps span {
+        color: #AEB8C0;
+    }
+
+    footer {
+        color: #6E7A82;
+        font-size: 13px;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="logo">
+        <div class="mark"></div>
+        <div class="name">Outback OS</div>
+    </div>
+
+    <h1>Getting started</h1>
+    <p class="subtitle">A quick tour of your new desktop, developer preview build.</p>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Settings</h2>
+            <p>Connect to Wi-Fi and Bluetooth, adjust brightness and volume, rename your device, and check for updates.</p>
+        </div>
+        <div class="card">
+            <h2>Files</h2>
+            <p>Browse, copy, rename and delete files across your home folder and any mounted volumes.</p>
+        </div>
+        <div class="card">
+            <h2>Terminal</h2>
+            <p>A full shell for anything the graphical apps don't cover yet.</p>
+        </div>
+        <div class="card">
+            <h2>Browser</h2>
+            <p>A private-by-default browser: no history, cache or cookies survive between sessions.</p>
+        </div>
+    </div>
+
+    <h2 style="margin-bottom:14px;">First things to try</h2>
+    <ol class="steps">
+        <li><b>Join a network</b><br><span>Open Settings &rarr; Network, switch Wi-Fi on, and pick a network from the list.</span></li>
+        <li><b>Look around the taskbar</b><br><span>Every open app gets a button there so you can switch between them.</span></li>
+        <li><b>Open the Files app</b><br><span>Your home folder is at <code>/home/outback</code>.</span></li>
+        <li><b>Pin your favourites</b><br><span>Use the star in the address bar to bookmark a page for next time.</span></li>
+    </ol>
+
+    <footer>Outback OS Developer Preview &middot; Outback Electronics</footer>
+</div>
+</body>
+</html>

@@ -359,6 +359,11 @@ ApplicationWindow {
 
                 property var wifiNetworks: []
                 property string activeSsid: systemBackend.activeNetwork()
+                property var savedNetworks: systemBackend.savedWifiNetworks()
+
+                function refreshSavedNetworks() {
+                    wifiPage.savedNetworks = systemBackend.savedWifiNetworks()
+                }
 
                 SettingCard {
                     title: "Wi-Fi"
@@ -434,6 +439,8 @@ ApplicationWindow {
                                 || modelData.security === "--"
                             readonly property bool isActive:
                                 modelData.ssid === wifiPage.activeSsid
+                            readonly property bool isKnown:
+                                wifiPage.savedNetworks.indexOf(modelData.ssid) !== -1
 
                             color: isActive
                                    ? root.raisedColor
@@ -477,6 +484,7 @@ ApplicationWindow {
                                         networkStatus.text =
                                             "Forgot " + modelData.ssid
                                         wifiPage.activeSsid = ""
+                                        wifiPage.refreshSavedNetworks()
                                     }
                                 }
                             }
@@ -488,7 +496,7 @@ ApplicationWindow {
                                 cursorShape: Qt.PointingHandCursor
 
                                 onClicked: {
-                                    if (isOpen) {
+                                    if (isOpen || isKnown) {
                                         networkStatus.text =
                                             "Connecting to " + modelData.ssid + "..."
                                         systemBackend.connectToNetwork(modelData.ssid, "")
@@ -835,6 +843,7 @@ ApplicationWindow {
             if (success) {
                 networkStatus.text = "Connected to " + ssid
                 wifiPage.activeSsid = ssid
+                wifiPage.refreshSavedNetworks()
                 passwordDialog.close()
             } else {
                 networkStatus.text = error.length > 0
