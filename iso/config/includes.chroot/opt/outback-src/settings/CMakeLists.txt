@@ -9,6 +9,12 @@ find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup(REQUIRES 6.4)
 
+if(NOT DEFINED OUTBACK_COMMON_DIR)
+    set(OUTBACK_COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../common)
+endif()
+
+add_subdirectory(${OUTBACK_COMMON_DIR} ${CMAKE_CURRENT_BINARY_DIR}/outback-common)
+
 qt_add_executable(outback-settings
     main.cpp
     SystemBackend.cpp
@@ -24,7 +30,7 @@ qt_add_qml_module(outback-settings
 )
 
 target_link_libraries(outback-settings
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick outback-common
 )
 
 install(

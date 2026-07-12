@@ -1,0 +1,31 @@
+---
+componentName: outback
+
+welcomeStyleCalamares: false
+welcomeExpandingLogo: true
+
+strings:
+    productName:          "Outback OS"
+    shortProductName:     "Outback OS"
+    version:               "0.1"
+    shortVersion:          "0.1"
+    versionedName:         "Outback OS 0.1 Developer Preview"
+    shortVersionedName:    "Outback OS 0.1"
+    bootloaderEntryName:   "Outback OS"
+    productUrl:            "https://outbackelectronics.com.au"
+    supportUrl:            "https://outbackelectronics.com.au"
+    knownIssuesUrl:        "https://outbackelectronics.com.au"
+    releaseNotesUrl:       "https://outbackelectronics.com.au"
+
+images:
+    productLogo:           "logo.png"
+    productIcon:           "logo.png"
+    productWelcome:        "welcome.png"
+
+slideshow: "show.qml"
+
+style:
+   sidebarBackground:      "#101418"
+   sidebarText:            "#F4F6F7"
+   sidebarTextSelect:      "#D9732F"
+   sidebarTextHighlight:   "#1B2229"

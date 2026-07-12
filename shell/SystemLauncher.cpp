@@ -1,6 +1,8 @@
 #include "SystemLauncher.h"
 
+#include <QFileInfo>
 #include <QProcess>
+#include <QProcessEnvironment>
 
 SystemLauncher::SystemLauncher(QObject *parent)
     : QObject(parent)
@@ -14,4 +16,23 @@ bool SystemLauncher::launch(const QString &program)
     }
 
     return QProcess::startDetached(program);
+}
+
+bool SystemLauncher::isInstallerAvailable() const
+{
+    return QFileInfo::exists(QStringLiteral("/usr/bin/calamares"));
+}
+
+bool SystemLauncher::launchInstaller()
+{
+    const auto env = QProcessEnvironment::systemEnvironment();
+
+    return QProcess::startDetached(
+        QStringLiteral("pkexec"),
+        {
+            QStringLiteral("/usr/bin/outback-launch-calamares"),
+            env.value(QStringLiteral("XDG_RUNTIME_DIR")),
+            env.value(QStringLiteral("WAYLAND_DISPLAY"))
+        }
+    );
 }

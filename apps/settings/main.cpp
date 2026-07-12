@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QGuiApplication::setApplicationName("Outback Settings");
+    QGuiApplication::setApplicationName("Outback");
     QGuiApplication::setOrganizationName("Outback Electronics");
     QGuiApplication::setOrganizationDomain(
         "outbackelectronics.com.au"

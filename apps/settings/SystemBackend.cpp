@@ -13,44 +13,9 @@ SystemBackend::SystemBackend(QObject *parent)
 {
 }
 
-SystemBackend::CommandResult SystemBackend::run(
-    const QString &program,
-    const QStringList &arguments
-) const
-{
-    QProcess process;
-
-    process.start(program, arguments);
-
-    if (!process.waitForStarted(5000)) {
-        return {
-            -1,
-            {},
-            QStringLiteral("Could not start %1").arg(program)
-        };
-    }
-
-    if (!process.waitForFinished(30000)) {
-        process.kill();
-        process.waitForFinished();
-
-        return {
-            -1,
-            QString::fromUtf8(process.readAllStandardOutput()).trimmed(),
-            QStringLiteral("Command timed out")
-        };
-    }
-
-    return {
-        process.exitCode(),
-        QString::fromUtf8(process.readAllStandardOutput()).trimmed(),
-        QString::fromUtf8(process.readAllStandardError()).trimmed()
-    };
-}
-
 QString SystemBackend::deviceName() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("hostnamectl"),
         {
             QStringLiteral("--static")
@@ -76,7 +41,7 @@ bool SystemBackend::renameDevice(const QString &name)
         return false;
     }
 
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("pkexec"),
         {
             QStringLiteral("hostnamectl"),
@@ -90,7 +55,7 @@ bool SystemBackend::renameDevice(const QString &name)
 
 int SystemBackend::brightness() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("brightnessctl"),
         {
             QStringLiteral("-m")
@@ -121,7 +86,7 @@ bool SystemBackend::setBrightness(int percentage)
 {
     percentage = qBound(1, percentage, 100);
 
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("brightnessctl"),
         {
             QStringLiteral("set"),
@@ -134,7 +99,7 @@ bool SystemBackend::setBrightness(int percentage)
 
 int SystemBackend::volume() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("wpctl"),
         {
             QStringLiteral("get-volume"),
@@ -171,7 +136,7 @@ bool SystemBackend::setVolume(int percentage)
     const QString value =
         QString::number(percentage) + QStringLiteral("%");
 
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("wpctl"),
         {
             QStringLiteral("set-volume"),
@@ -185,7 +150,7 @@ bool SystemBackend::setVolume(int percentage)
 
 bool SystemBackend::audioMuted() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("wpctl"),
         {
             QStringLiteral("get-volume"),
@@ -202,7 +167,7 @@ bool SystemBackend::audioMuted() const
 
 bool SystemBackend::setAudioMuted(bool muted)
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("wpctl"),
         {
             QStringLiteral("set-mute"),
@@ -218,7 +183,7 @@ bool SystemBackend::setAudioMuted(bool muted)
 
 bool SystemBackend::wifiEnabled() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("nmcli"),
         {
             QStringLiteral("-t"),
@@ -237,7 +202,7 @@ bool SystemBackend::wifiEnabled() const
 
 bool SystemBackend::setWifiEnabled(bool enabled)
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("nmcli"),
         {
             QStringLiteral("radio"),
@@ -253,7 +218,7 @@ bool SystemBackend::setWifiEnabled(bool enabled)
 
 QString SystemBackend::activeNetwork() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("nmcli"),
         {
             QStringLiteral("-t"),
@@ -313,15 +278,99 @@ bool SystemBackend::connectWifi(
         arguments.append(password);
     }
 
-    return run(
+    return CommandRunner::run(
         QStringLiteral("nmcli"),
         arguments
     ).succeeded();
 }
 
+void SystemBackend::connectToNetwork(
+    const QString &ssid,
+    const QString &password
+)
+{
+    if (m_wifiConnecting || ssid.trimmed().isEmpty()) {
+        return;
+    }
+
+    m_wifiConnecting = true;
+    emit wifiConnectingChanged();
+
+    QStringList arguments = {
+        QStringLiteral("device"),
+        QStringLiteral("wifi"),
+        QStringLiteral("connect"),
+        ssid
+    };
+
+    if (!password.isEmpty()) {
+        arguments.append(QStringLiteral("password"));
+        arguments.append(password);
+    }
+
+    m_wifiConnectProcess.setProgram(QStringLiteral("nmcli"));
+    m_wifiConnectProcess.setArguments(arguments);
+
+    disconnect(
+        &m_wifiConnectProcess,
+        nullptr,
+        this,
+        nullptr
+    );
+
+    connect(
+        &m_wifiConnectProcess,
+        &QProcess::finished,
+        this,
+        [this, ssid](
+            int exitCode,
+            QProcess::ExitStatus exitStatus
+        ) {
+            const QString error = QString::fromUtf8(
+                m_wifiConnectProcess.readAllStandardError()
+            ).trimmed();
+
+            m_wifiConnecting = false;
+            emit wifiConnectingChanged();
+
+            const bool success =
+                exitStatus == QProcess::NormalExit
+                && exitCode == 0;
+
+            emit wifiConnectFinished(
+                success,
+                ssid,
+                success
+                    ? QString()
+                    : (error.isEmpty()
+                        ? QStringLiteral("Could not connect to %1").arg(ssid)
+                        : error)
+            );
+        }
+    );
+
+    m_wifiConnectProcess.start();
+}
+
+bool SystemBackend::forgetNetwork(const QString &ssid)
+{
+    if (ssid.trimmed().isEmpty()) {
+        return false;
+    }
+
+    return CommandRunner::run(
+        QStringLiteral("nmcli"),
+        {
+            QStringLiteral("connection"),
+            QStringLiteral("delete"),
+            ssid
+        }
+    ).succeeded();
+}
+
 bool SystemBackend::bluetoothEnabled() const
 {
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("bluetoothctl"),
         {
             QStringLiteral("show")
@@ -338,7 +387,7 @@ bool SystemBackend::bluetoothEnabled() const
 bool SystemBackend::setBluetoothEnabled(bool enabled)
 {
     if (enabled) {
-        const auto unblock = run(
+        const auto unblock = CommandRunner::run(
             QStringLiteral("pkexec"),
             {
                 QStringLiteral("rfkill"),
@@ -352,7 +401,7 @@ bool SystemBackend::setBluetoothEnabled(bool enabled)
         }
     }
 
-    const auto result = run(
+    const auto result = CommandRunner::run(
         QStringLiteral("bluetoothctl"),
         {
             QStringLiteral("power"),
@@ -409,7 +458,7 @@ QString SystemBackend::operatingSystem() const
 
 QString SystemBackend::checkForUpdates()
 {
-    const auto refresh = run(
+    const auto refresh = CommandRunner::run(
         QStringLiteral("pkexec"),
         {
             QStringLiteral("apt-get"),
@@ -423,7 +472,7 @@ QString SystemBackend::checkForUpdates()
             : refresh.standardError;
     }
 
-    const auto simulation = run(
+    const auto simulation = CommandRunner::run(
         QStringLiteral("apt-get"),
         {
             QStringLiteral("--simulate"),
@@ -459,6 +508,100 @@ bool SystemBackend::wifiScanning() const
 bool SystemBackend::bluetoothScanning() const
 {
     return m_bluetoothScanning;
+}
+
+bool SystemBackend::wifiConnecting() const
+{
+    return m_wifiConnecting;
+}
+
+bool SystemBackend::autoUpdatesEnabled() const
+{
+    return CommandRunner::run(
+        QStringLiteral("systemctl"),
+        {
+            QStringLiteral("is-enabled"),
+            QStringLiteral("--quiet"),
+            QStringLiteral("apt-daily-upgrade.timer")
+        }
+    ).succeeded();
+}
+
+bool SystemBackend::setAutoUpdatesEnabled(bool enabled)
+{
+    return CommandRunner::run(
+        QStringLiteral("pkexec"),
+        {
+            QStringLiteral("outback-toggle-autoupdates"),
+            enabled
+                ? QStringLiteral("on")
+                : QStringLiteral("off")
+        }
+    ).succeeded();
+}
+
+bool SystemBackend::offlineMode() const
+{
+    const auto result = CommandRunner::run(
+        QStringLiteral("nmcli"),
+        {
+            QStringLiteral("networking")
+        }
+    );
+
+    return result.succeeded()
+        && result.standardOutput.compare(
+            QStringLiteral("disabled"),
+            Qt::CaseInsensitive
+        ) == 0;
+}
+
+bool SystemBackend::setOfflineMode(bool enabled)
+{
+    return CommandRunner::run(
+        QStringLiteral("nmcli"),
+        {
+            QStringLiteral("networking"),
+            enabled
+                ? QStringLiteral("off")
+                : QStringLiteral("on")
+        }
+    ).succeeded();
+}
+
+bool SystemBackend::nightColourEnabled() const
+{
+    return CommandRunner::run(
+        QStringLiteral("pgrep"),
+        {
+            QStringLiteral("-x"),
+            QStringLiteral("gammastep")
+        }
+    ).succeeded();
+}
+
+bool SystemBackend::setNightColour(bool enabled)
+{
+    if (enabled) {
+        m_nightColourProcess.setProgram(QStringLiteral("gammastep"));
+        m_nightColourProcess.setArguments({
+            QStringLiteral("-O"),
+            QStringLiteral("4500")
+        });
+        m_nightColourProcess.start();
+
+        return true;
+    }
+
+    CommandRunner::run(
+        QStringLiteral("pkill"),
+        {
+            QStringLiteral("-x"),
+            QStringLiteral("gammastep")
+        }
+    );
+
+    return true;
 }
 
 QVariantList SystemBackend::parseWifiNetworks(

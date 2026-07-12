@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
+import Qt.labs.settings
 
 ApplicationWindow {
     id: root
@@ -16,9 +17,23 @@ ApplicationWindow {
     property color sidebarColor: "#151B21"
     property color surfaceColor: "#1B2229"
     property color raisedColor: "#252E36"
-    property color primaryColor: "#D9732F"
+    property color primaryColor: accentColours[prefs.accentIndex]
     property color textPrimaryColor: "#F4F6F7"
     property color textSecondaryColor: "#AEB8C0"
+
+    property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
+    property var accentNames: ["Outback Orange", "Ocean Blue", "Spinifex Green"]
+    property var scalingOptions: ["100%", "125%", "150%", "175%", "200%"]
+
+    Settings {
+        id: prefs
+
+        category: "appearance"
+
+        property int accentIndex: 0
+        property int scalingIndex: 0
+        property bool animationsEnabled: true
+    }
 
     property var categories: [
         "System",
@@ -27,7 +42,7 @@ ApplicationWindow {
         "Network",
         "Bluetooth",
         "Appearance",
-        "Accounts",
+        "Device",
         "Privacy",
         "Updates",
         "About"
@@ -154,12 +169,35 @@ ApplicationWindow {
 
                 SettingCard {
                     title: "Device name"
-                    description: "outback-homelab"
+                    description: deviceNameField.text
+
+                    TextField {
+                        id: deviceNameField
+                        Layout.preferredWidth: 200
+
+                        Component.onCompleted: {
+                            text = systemBackend.deviceName()
+                        }
+                    }
 
                     Button {
                         text: "Rename"
-                        onClicked: console.log("Rename device")
+
+                        onClicked: {
+                            renameStatus.text = systemBackend.renameDevice(
+                                deviceNameField.text
+                            )
+                                ? "Renamed. Applies fully after next sign-in."
+                                : "Could not rename device"
+                        }
                     }
+                }
+
+                Text {
+                    id: renameStatus
+                    text: ""
+                    color: root.textSecondaryColor
+                    font.pixelSize: 14
                 }
 
                 SettingCard {
@@ -167,8 +205,17 @@ ApplicationWindow {
                     description: "Install security and system updates automatically"
 
                     Switch {
-                        checked: true
-                        onToggled: console.log("Automatic updates:", checked)
+                        id: autoUpdatesSwitch
+
+                        Component.onCompleted: {
+                            checked = systemBackend.autoUpdatesEnabled()
+                        }
+
+                        onToggled: {
+                            if (!systemBackend.setAutoUpdatesEnabled(checked)) {
+                                checked = !checked
+                            }
+                        }
                     }
                 }
 
@@ -177,7 +224,17 @@ ApplicationWindow {
                     description: "Reduce network activity when connectivity is limited"
 
                     Switch {
-                        onToggled: console.log("Offline mode:", checked)
+                        id: offlineModeSwitch
+
+                        Component.onCompleted: {
+                            checked = systemBackend.offlineMode()
+                        }
+
+                        onToggled: {
+                            if (!systemBackend.setOfflineMode(checked)) {
+                                checked = !checked
+                            }
+                        }
                     }
                 }
             }
@@ -214,11 +271,17 @@ ApplicationWindow {
 
                 SettingCard {
                     title: "Interface scaling"
-                    description: scalingBox.currentText
+                    description: root.scalingOptions[scalingBox.currentIndex]
+                                 + " · applies after next sign-in"
 
                     ComboBox {
                         id: scalingBox
-                        model: ["100%", "125%", "150%", "175%", "200%"]
+                        model: root.scalingOptions
+                        currentIndex: prefs.scalingIndex
+
+                        onActivated: {
+                            prefs.scalingIndex = currentIndex
+                        }
                     }
                 }
 
@@ -228,6 +291,14 @@ ApplicationWindow {
 
                     Switch {
                         id: nightSwitch
+
+                        Component.onCompleted: {
+                            checked = systemBackend.nightColourEnabled()
+                        }
+
+                        onToggled: {
+                            systemBackend.setNightColour(checked)
+                        }
                     }
                 }
             }
@@ -281,8 +352,13 @@ ApplicationWindow {
             }
 
             SettingsPage {
+                id: wifiPage
+
                 pageTitle: "Network"
                 pageDescription: "Manage wired and wireless connections."
+
+                property var wifiNetworks: []
+                property string activeSsid: systemBackend.activeNetwork()
 
                 SettingCard {
                     title: "Wi-Fi"
@@ -297,7 +373,7 @@ ApplicationWindow {
 
                         onToggled: {
                             systemBackend.setWifiEnabled(checked)
-                            activeNetworkText.text =
+                            wifiPage.activeSsid =
                                 systemBackend.activeNetwork()
                         }
                     }
@@ -305,13 +381,9 @@ ApplicationWindow {
 
                 SettingCard {
                     title: "Current network"
-                    description: activeNetworkText.text
-
-                    Text {
-                        id: activeNetworkText
-                        text: systemBackend.activeNetwork()
-                        visible: false
-                    }
+                    description: wifiPage.activeSsid.length > 0
+                                  ? wifiPage.activeSsid
+                                  : "Not connected"
 
                     Button {
                         text: systemBackend.wifiScanning
@@ -334,6 +406,101 @@ ApplicationWindow {
                     text: ""
                     color: root.textSecondaryColor
                     font.pixelSize: 14
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 280
+
+                    radius: 20
+                    color: root.surfaceColor
+                    clip: true
+
+                    ListView {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 4
+                        model: wifiPage.wifiNetworks
+
+                        delegate: Rectangle {
+                            required property var modelData
+
+                            width: ListView.view.width
+                            height: 56
+                            radius: 12
+
+                            readonly property bool isOpen:
+                                modelData.security === ""
+                                || modelData.security === "--"
+                            readonly property bool isActive:
+                                modelData.ssid === wifiPage.activeSsid
+
+                            color: isActive
+                                   ? root.raisedColor
+                                   : rowMouse.containsMouse
+                                       ? "#202830"
+                                       : "transparent"
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 16
+                                anchors.rightMargin: 16
+                                spacing: 12
+
+                                Text {
+                                    text: modelData.signal > 66
+                                          ? "▓▓▓"
+                                          : modelData.signal > 33
+                                              ? "▓▓░"
+                                              : "▓░░"
+                                    color: root.primaryColor
+                                    font.pixelSize: 13
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: modelData.ssid
+                                          + (isOpen ? "" : "  🔒")
+                                    color: root.textPrimaryColor
+                                    font.pixelSize: 15
+                                    font.weight: isActive
+                                                 ? Font.Bold
+                                                 : Font.Normal
+                                }
+
+                                Button {
+                                    visible: isActive
+                                    text: "Forget"
+
+                                    onClicked: {
+                                        systemBackend.forgetNetwork(modelData.ssid)
+                                        networkStatus.text =
+                                            "Forgot " + modelData.ssid
+                                        wifiPage.activeSsid = ""
+                                    }
+                                }
+                            }
+
+                            MouseArea {
+                                id: rowMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+
+                                onClicked: {
+                                    if (isOpen) {
+                                        networkStatus.text =
+                                            "Connecting to " + modelData.ssid + "..."
+                                        systemBackend.connectToNetwork(modelData.ssid, "")
+                                    } else {
+                                        passwordDialog.targetSsid = modelData.ssid
+                                        passwordField.text = ""
+                                        passwordDialog.open()
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -394,11 +561,12 @@ ApplicationWindow {
 
                 SettingCard {
                     title: "Theme"
-                    description: themeBox.currentText
+                    description: "Outback Dark · additional themes coming in a future release"
 
                     ComboBox {
-                        id: themeBox
-                        model: ["Outback Dark", "Outback Light", "High Contrast"]
+                        model: ["Outback Dark"]
+                        currentIndex: 0
+                        enabled: false
                     }
                 }
 
@@ -408,57 +576,76 @@ ApplicationWindow {
 
                     Switch {
                         id: animationSwitch
-                        checked: true
+                        checked: prefs.animationsEnabled
+
+                        onToggled: {
+                            prefs.animationsEnabled = checked
+                        }
                     }
                 }
 
                 SettingCard {
                     title: "Accent colour"
-                    description: "Outback Orange"
+                    description: root.accentNames[accentRow.currentIndex]
 
-                    Rectangle {
-                        width: 44
-                        height: 44
-                        radius: 14
-                        color: root.primaryColor
+                    Row {
+                        id: accentRow
+
+                        property int currentIndex: prefs.accentIndex
+
+                        spacing: 12
+
+                        Repeater {
+                            model: root.accentColours
+
+                            delegate: Rectangle {
+                                required property string modelData
+                                required property int index
+
+                                width: 36
+                                height: 36
+                                radius: 12
+                                color: modelData
+                                border.width: accentRow.currentIndex === index ? 3 : 0
+                                border.color: root.textPrimaryColor
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: prefs.accentIndex = index
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             SettingsPage {
-                pageTitle: "Accounts"
-                pageDescription: "Manage Outback accounts and device identity."
+                pageTitle: "Device identity"
+                pageDescription: "Outback OS is a local-only system — there is no cloud account."
 
                 SettingCard {
-                    title: "Outback Account"
-                    description: "No account connected"
+                    title: "Device name"
+                    description: systemBackend.deviceName()
+                }
 
-                    Button {
-                        text: "Sign in"
-                        onClicked: console.log("Open sign-in flow")
-                    }
+                SettingCard {
+                    title: "Local user"
+                    description: "outback"
                 }
             }
 
             SettingsPage {
                 pageTitle: "Privacy"
-                pageDescription: "Control permissions, location and diagnostics."
+                pageDescription: "Control permissions and data collection."
 
                 SettingCard {
                     title: "Location services"
-                    description: locationSwitch.checked ? "Enabled" : "Disabled"
+                    description: "Disabled · no location hardware on this device"
 
                     Switch {
-                        id: locationSwitch
-                    }
-                }
-
-                SettingCard {
-                    title: "Diagnostic data"
-                    description: diagnosticsSwitch.checked ? "Enabled" : "Disabled"
-
-                    Switch {
-                        id: diagnosticsSwitch
+                        checked: false
+                        enabled: false
                     }
                 }
             }
@@ -511,6 +698,38 @@ ApplicationWindow {
                     description: "Development build"
                 }
             }
+        }
+    }
+
+    Dialog {
+        id: passwordDialog
+
+        property string targetSsid: ""
+
+        title: "Connect to " + targetSsid
+        modal: true
+        anchors.centerIn: Overlay.overlay
+        standardButtons: Dialog.Ok | Dialog.Cancel
+
+        contentItem: ColumnLayout {
+            spacing: 12
+
+            Text {
+                text: "Enter the password for " + passwordDialog.targetSsid
+                color: root.textPrimaryColor
+            }
+
+            TextField {
+                id: passwordField
+                Layout.preferredWidth: 260
+                echoMode: TextInput.Password
+            }
+        }
+
+        onAccepted: {
+            networkStatus.text =
+                "Connecting to " + targetSsid + "..."
+            systemBackend.connectToNetwork(targetSsid, passwordField.text)
         }
     }
 
@@ -604,19 +823,24 @@ ApplicationWindow {
                 return
             }
 
-            if (networks.length === 0) {
-                networkStatus.text =
-                    "No Wi-Fi networks found"
-                return
-            }
+            wifiPage.wifiNetworks = networks
+            wifiPage.activeSsid = systemBackend.activeNetwork()
 
-            networkStatus.text =
-                networks.length
-                + " Wi-Fi networks found. Strongest: "
-                + networks[0].ssid
-                + " ("
-                + networks[0].signal
-                + "%)"
+            networkStatus.text = networks.length === 0
+                ? "No Wi-Fi networks found"
+                : networks.length + " Wi-Fi networks found"
+        }
+
+        function onWifiConnectFinished(success, ssid, error) {
+            if (success) {
+                networkStatus.text = "Connected to " + ssid
+                wifiPage.activeSsid = ssid
+                passwordDialog.close()
+            } else {
+                networkStatus.text = error.length > 0
+                    ? error
+                    : "Could not connect to " + ssid
+            }
         }
 
         function onBluetoothScanFinished(devices, error) {

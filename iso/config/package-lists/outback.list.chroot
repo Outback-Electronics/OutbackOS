@@ -67,6 +67,27 @@ qml6-module-qtquick-controls
 qml6-module-qtquick-layouts
 qml6-module-qtquick-templates
 qml6-module-qtquick-dialogs
+qml6-module-qt-labs-settings
+qml6-module-qt-labs-folderlistmodel
+
+unattended-upgrades
+gammastep
+udisks2
+libvterm-dev
+
+qt6-webengine-dev
+qml6-module-qtwebengine
+
+calamares
+calamares-settings-debian
+os-prober
+parted
+gdisk
+dosfstools
+squashfs-tools
+grub-pc-bin
+grub-efi-amd64-bin
+efibootmgr
 
 nano
 less

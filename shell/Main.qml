@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
+import Qt.labs.settings
 
 ApplicationWindow {
     id: root
@@ -18,9 +19,21 @@ ApplicationWindow {
 
     property color surface: "#1B2229"
     property color surfaceRaised: "#252E36"
-    property color primary: "#D9732F"
+    property color primary: accentColours[prefs.accentIndex]
     property color textPrimary: "#F4F6F7"
     property color textSecondary: "#AEB8C0"
+
+    property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
+
+    Settings {
+        id: prefs
+
+        category: "appearance"
+
+        property int accentIndex: 0
+        property int scalingIndex: 0
+        property bool animationsEnabled: true
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -141,13 +154,13 @@ ApplicationWindow {
             AppTile {
                 title: "Files"
                 symbol: "F"
-                command: ""
+                command: "/usr/bin/outback-files"
             }
 
             AppTile {
                 title: "Browser"
                 symbol: "B"
-                command: ""
+                command: "/usr/bin/outback-browser"
             }
 
             AppTile {
@@ -159,7 +172,15 @@ ApplicationWindow {
             AppTile {
                 title: "Terminal"
                 symbol: "T"
+                command: "/usr/bin/outback-terminal"
+            }
+
+            AppTile {
+                title: "Install Outback OS"
+                symbol: "I"
                 command: ""
+                isInstaller: true
+                visible: systemLauncher.isInstallerAvailable()
             }
         }
 
@@ -200,6 +221,8 @@ ApplicationWindow {
                                : "transparent"
 
                         Behavior on color {
+                            enabled: prefs.animationsEnabled
+
                             ColorAnimation {
                                 duration: 140
                             }
@@ -232,6 +255,7 @@ ApplicationWindow {
         required property string title
         required property string symbol
         required property string command
+        property bool isInstaller: false
 
         Layout.preferredWidth: 160
         Layout.preferredHeight: 145
@@ -244,6 +268,8 @@ ApplicationWindow {
         scale: tileMouse.pressed ? 0.96 : 1.0
 
         Behavior on scale {
+            enabled: prefs.animationsEnabled
+
             NumberAnimation {
                 duration: 100
                 easing.type: Easing.OutCubic
@@ -251,6 +277,8 @@ ApplicationWindow {
         }
 
         Behavior on color {
+            enabled: prefs.animationsEnabled
+
             ColorAnimation {
                 duration: 150
             }
@@ -294,6 +322,13 @@ ApplicationWindow {
             cursorShape: Qt.PointingHandCursor
 
             onClicked: {
+                if (tile.isInstaller) {
+                    if (!systemLauncher.launchInstaller()) {
+                        console.log("Failed to launch installer")
+                    }
+                    return
+                }
+
                 if (tile.command.length === 0) {
                     console.log(tile.title, "is not built yet")
                     return
