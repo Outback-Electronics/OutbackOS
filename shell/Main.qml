@@ -187,66 +187,6 @@ ApplicationWindow {
         Item {
             Layout.fillHeight: true
         }
-
-        Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 540
-            Layout.preferredHeight: 72
-
-            radius: 24
-            color: root.surface
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 10
-                spacing: 10
-
-                Repeater {
-                    model: [
-                        "Home",
-                        "Files",
-                        "Browser",
-                        "Settings"
-                    ]
-
-                    delegate: Rectangle {
-                        required property string modelData
-
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        radius: 16
-                        color: mouse.containsMouse
-                               ? root.surfaceRaised
-                               : "transparent"
-
-                        Behavior on color {
-                            enabled: prefs.animationsEnabled
-
-                            ColorAnimation {
-                                duration: 140
-                            }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                            color: root.textPrimary
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                        }
-
-                        MouseArea {
-                            id: mouse
-
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                        }
-                    }
-                }
-            }
-        }
     }
 
     component AppTile: Rectangle {
