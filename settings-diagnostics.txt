@@ -1,0 +1,184 @@
+===== SYSTEM =====
+ Static hostname: homelab
+       Icon name: computer-laptop
+         Chassis: laptop 💻
+      Machine ID: ecf189e6ac334af5bf2e1874b1a55427
+         Boot ID: ceceadd19c374f41a0d82365d2bf9fda
+Operating System: Linux Mint 22.3
+          Kernel: Linux 6.17.0-35-generic
+    Architecture: x86-64
+ Hardware Vendor: Acer
+  Hardware Model: Nitro ANV15-51
+Firmware Version: V1.60
+   Firmware Date: Wed 2026-04-08
+    Firmware Age: 3month 3d
+
+===== SESSION =====
+XDG_SESSION_TYPE=x11
+XDG_CURRENT_DESKTOP=X-Cinnamon
+XDG_RUNTIME_DIR=/run/user/1000
+
+===== REQUIRED COMMANDS =====
+nmcli          /usr/bin/nmcli
+wpctl          /usr/bin/wpctl
+bluetoothctl   /usr/bin/bluetoothctl
+brightnessctl  /usr/bin/brightnessctl
+pkexec         /usr/bin/pkexec
+
+===== NETWORKMANAGER =====
+active
+STATE      CONNECTIVITY  WIFI-HW  WIFI     WWAN-HW  WWAN    
+connected  full          enabled  enabled  missing  enabled 
+WIFI-HW  WIFI     WWAN-HW  WWAN    
+enabled  enabled  missing  enabled 
+DEVICE           TYPE      STATE                   CONNECTION                     
+wlp62s0          wifi      connected               Auto OutbackElectronics-2.4GHz 
+lo               loopback  connected (externally)  lo                             
+p2p-dev-wlp62s0  wifi-p2p  disconnected            --                             
+enp63s0          ethernet  unavailable             --                             
+
+===== WI-FI =====
+wlp62s0:wifi:connected:Auto OutbackElectronics-2.4GHz
+lo:loopback:connected (externally):lo
+p2p-dev-wlp62s0:wifi-p2p:disconnected:
+enp63s0:ethernet:unavailable:
+ ::100:WPA2 WPA3
+ :OutbackElectronics-5GHz:99:WPA2 WPA3
+ ::95:WPA2 WPA3
+ ::92:WPA2 WPA3
+ ::90:WPA2 WPA3
+ :OutbackElectronics-5GHz:90:WPA2 WPA3
+ :OutbackElectronics-2.4GHz:84:WPA2 WPA3
+ ::84:WPA2 WPA3
+ ::84:WPA2 WPA3
+*:OutbackElectronics-2.4GHz:80:WPA2 WPA3
+ ::79:WPA2 WPA3
+ :OutbackElectronics-5GHz:77:WPA2 WPA3
+ ::72:WPA2 WPA3
+ :OutbackElectronics-2.4GHz:70:WPA2 WPA3
+ ::67:WPA2 WPA3
+ ::67:WPA2 WPA3
+ :OutbackElectronics-5GHz:67:WPA2 WPA3
+ :OutbackElectronics-5GHz:65:WPA2 WPA3
+ ::64:WPA2 WPA3
+ :OutbackElectronics-2.4GHz:64:WPA2 WPA3
+
+===== PIPEWIRE =====
+active
+active
+PipeWire 'pipewire-0' [1.0.5, daniel@homelab, cookie:3672922219]
+ └─ Clients:
+        32. pipewire                            [1.0.5, daniel@homelab, pid:1564]
+        34. WirePlumber                         [1.0.5, daniel@homelab, pid:1563]
+        35. WirePlumber [export]                [1.0.5, daniel@homelab, pid:1563]
+        58. Cinnamon Volume Control Media Keys  [1.0.5, daniel@homelab, pid:1746]
+        74. Cinnamon Volume Control             [1.0.5, daniel@homelab, pid:1946]
+        75. Blueman                             [1.0.5, daniel@homelab, pid:2011]
+        76. Muffin                              [1.0.5, daniel@homelab, pid:1946]
+        77. xdg-desktop-portal                  [1.0.5, daniel@homelab, pid:2787]
+        79. Firefox                             [1.0.5, daniel@homelab, pid:2734]
+        81. wpctl                               [1.0.5, daniel@homelab, pid:12801]
+
+Audio
+ ├─ Devices:
+ │      44. HDA NVidia                          [alsa]
+ │      45. Raptor Lake-P/U/H cAVS              [alsa]
+ │  
+ ├─ Sinks:
+ │      52. Raptor Lake-P/U/H cAVS HDMI / DisplayPort 3 Output [vol: 1.00]
+ │      53. Raptor Lake-P/U/H cAVS HDMI / DisplayPort 2 Output [vol: 1.00]
+ │      54. Raptor Lake-P/U/H cAVS HDMI / DisplayPort 1 Output [vol: 1.00]
+ │  *   55. Raptor Lake-P/U/H cAVS Speaker + Headphones [vol: 0.00 MUTED]
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │  *   56. Raptor Lake-P/U/H cAVS Headphones Stereo Microphone [vol: 1.00]
+ │      57. Raptor Lake-P/U/H cAVS Digital Microphone [vol: 1.00]
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Video
+ ├─ Devices:
+ │      42. ACER HD User Facing                 [v4l2]
+ │      43. ACER HD User Facing                 [v4l2]
+ │  
+ ├─ Sinks:
+ │  
+ ├─ Sink endpoints:
+ │  
+ ├─ Sources:
+ │  *   50. ACER HD User Facing (V4L2)         
+ │  
+ ├─ Source endpoints:
+ │  
+ └─ Streams:
+
+Settings
+ └─ Default Configured Node Names:
+
+===== DEFAULT AUDIO =====
+Volume: 0.00 [MUTED]
+
+===== BLUETOOTH =====
+active
+1: acer-bluetooth: Bluetooth
+	Soft blocked: yes
+	Hard blocked: no
+2: hci0: Bluetooth
+	Soft blocked: yes
+	Hard blocked: no
+Controller D4:AB:61:4D:20:5A (public)
+	Manufacturer: 0x0002 (2)
+	Version: 0x0c (12)
+	Name: homelab
+	Alias: homelab
+	Class: 0x00000000 (0)
+	Powered: no
+	Discoverable: no
+	DiscoverableTimeout: 0x000000b4 (180)
+	Pairable: yes
+	UUID: Message Notification Se.. (00001133-0000-1000-8000-00805f9b34fb)
+	UUID: A/V Remote Control        (0000110e-0000-1000-8000-00805f9b34fb)
+	UUID: OBEX Object Push          (00001105-0000-1000-8000-00805f9b34fb)
+	UUID: Message Access Server     (00001132-0000-1000-8000-00805f9b34fb)
+	UUID: PnP Information           (00001200-0000-1000-8000-00805f9b34fb)
+	UUID: IrMC Sync                 (00001104-0000-1000-8000-00805f9b34fb)
+	UUID: Vendor specific           (00005005-0000-1000-8000-0002ee000001)
+	UUID: A/V Remote Control Target (0000110c-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Attribute Profile (00001801-0000-1000-8000-00805f9b34fb)
+	UUID: Phonebook Access Server   (0000112f-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Sink                (0000110b-0000-1000-8000-00805f9b34fb)
+	UUID: Device Information        (0000180a-0000-1000-8000-00805f9b34fb)
+	UUID: Generic Access Profile    (00001800-0000-1000-8000-00805f9b34fb)
+	UUID: Handsfree Audio Gateway   (0000111f-0000-1000-8000-00805f9b34fb)
+	UUID: Audio Source              (0000110a-0000-1000-8000-00805f9b34fb)
+	UUID: OBEX File Transfer        (00001106-0000-1000-8000-00805f9b34fb)
+	UUID: Handsfree                 (0000111e-0000-1000-8000-00805f9b34fb)
+	Modalias: usb:v1D6Bp0246d0548
+	Discovering: no
+	Roles: central
+	Roles: peripheral
+Advertising Features:
+	ActiveInstances: 0x00 (0)
+	SupportedInstances: 0x0c (12)
+	SupportedIncludes: tx-power
+	SupportedIncludes: appearance
+	SupportedIncludes: local-name
+	SupportedSecondaryChannels: 1M
+	SupportedSecondaryChannels: 2M
+	SupportedSecondaryChannels: Coded
+
+===== BRIGHTNESS =====
+intel_backlight,backlight,19200,100%,19200
+total 0
+drwxr-xr-x  2 root root 0 Jul 12 12:07 .
+drwxr-xr-x 88 root root 0 Jul 12  2026 ..
+lrwxrwxrwx  1 root root 0 Jul 12 11:27 intel_backlight -> ../../devices/pci0000:00/0000:00:02.0/drm/card1/card1-eDP-1/intel_backlight
+
+===== SETTINGS BINARY =====
+Libraries appear present
+
+===== END =====

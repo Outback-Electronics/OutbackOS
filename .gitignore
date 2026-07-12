@@ -1,0 +1,42 @@
+# Build outputs
+**/build/
+**/build-*/
+**/.build/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/build.ninja
+**/.ninja_*
+
+# live-build generated state
+iso/cache/
+iso/chroot/
+iso/binary/
+iso/.build/
+iso/.lock
+iso/build.log
+iso/live-image-*
+iso/*.iso
+iso/*.iso.sha256
+
+# Old experimental ISO projects
+iso-legacy-*/
+
+# Temporary and editor files
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+.vscode/
+.idea/
+
+# live-build generated files
+iso/live-image-*.iso
+iso/*.iso
+iso/*.sha256
+iso/binary*
+iso/chroot*
+iso/cache/
+iso/.build/
+iso/wget-log*

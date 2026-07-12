@@ -1,0 +1,43 @@
+#!/bin/sh
+set -eu
+
+build_outback_app()
+{
+    source_dir="$1"
+    build_dir="$2"
+    binary_name="$3"
+
+    rm -rf "$build_dir"
+
+    cmake \
+        -S "$source_dir" \
+        -B "$build_dir" \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr
+
+    cmake --build "$build_dir"
+
+    if ! cmake --install "$build_dir"; then
+        install -m 0755 \
+            "$build_dir/$binary_name" \
+            "/usr/bin/$binary_name"
+    fi
+
+    test -x "/usr/bin/$binary_name"
+}
+
+build_outback_app \
+    /opt/outback-src/shell \
+    /tmp/outback-shell-build \
+    outback-shell
+
+build_outback_app \
+    /opt/outback-src/settings \
+    /tmp/outback-settings-build \
+    outback-settings
+
+rm -rf \
+    /tmp/outback-shell-build \
+    /tmp/outback-settings-build \
+    /opt/outback-src

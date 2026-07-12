@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+systemctl enable NetworkManager.service
+systemctl enable bluetooth.service
+systemctl enable outback-session.service
+systemctl set-default graphical.target
+
+mkdir -p /etc/NetworkManager/conf.d
+
+cat > /etc/NetworkManager/conf.d/10-outback.conf <<'INNER'
+[main]
+plugins=keyfile
+auth-polkit=true
+
+[device]
+wifi.scan-rand-mac-address=yes
+INNER

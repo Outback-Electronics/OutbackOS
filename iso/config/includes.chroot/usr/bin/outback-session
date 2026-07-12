@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=Outback
+export XDG_SESSION_DESKTOP=Outback
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export WAYLAND_DISPLAY=wayland-0
+
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 0700 "$XDG_RUNTIME_DIR"
+
+exec dbus-run-session -- \
+    weston \
+        --backend=drm \
+        --shell=kiosk \
+        --idle-time=0 \
+        --log=/home/outback/weston.log \
+        -- \
+        /usr/bin/outback-shell

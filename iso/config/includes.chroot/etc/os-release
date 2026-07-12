@@ -1,0 +1,10 @@
+NAME="Outback OS"
+PRETTY_NAME="Outback OS 0.1 Developer Preview"
+ID=outback
+ID_LIKE=debian
+VERSION_ID="0.1"
+VERSION="0.1 Developer Preview"
+VERSION_CODENAME=horizon
+HOME_URL="https://outbackelectronics.com.au"
+SUPPORT_URL="https://outbackelectronics.com.au"
+BUG_REPORT_URL="https://outbackelectronics.com.au"
