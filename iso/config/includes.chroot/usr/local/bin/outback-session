@@ -1,2 +1,14 @@
 #!/bin/sh
+set -eu
+
+# SDDM/pam_systemd already set up XDG_RUNTIME_DIR and a session D-Bus, but
+# these desktop-identity variables aren't implied by any of that - without
+# them, Qt/xdg-desktop-portal can't reliably tell this is a Wayland session
+# called "Outback", which portal backends and Qt's platform selection key
+# off of.
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=Outback
+export XDG_SESSION_DESKTOP=Outback
+export QT_QPA_PLATFORM=wayland
+
 exec labwc
