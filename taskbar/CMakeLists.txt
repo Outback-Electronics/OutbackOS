@@ -39,6 +39,7 @@ qt_add_qml_module(outback-taskbar
     QML_FILES
         Main.qml
         StartMenu.qml
+        Apps.qml
     SOURCES
         ForeignToplevel.cpp
         ForeignToplevel.h

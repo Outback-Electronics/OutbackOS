@@ -46,6 +46,7 @@ Window {
         primary: root.primary
         textPrimary: root.textPrimary
         textSecondary: root.textSecondary
+        taskbarHeight: root.height
     }
 
     Connections {
@@ -84,16 +85,18 @@ Window {
             }
         }
 
-        PinnedButton {
-            symbol: "T"
-            label: "Terminal"
-            command: "/usr/bin/outback-terminal"
-        }
+        Repeater {
+            // Pinned taskbar apps come from the same registry the start
+            // menu's all-apps list uses, so adding an app there is enough
+            // to also pin it here.
+            model: Apps.entries.filter(function (app) { return app.pinned })
 
-        PinnedButton {
-            symbol: "F"
-            label: "Files"
-            command: "/usr/bin/outback-files"
+            delegate: PinnedButton {
+                required property var modelData
+                symbol: modelData.symbol
+                label: modelData.label
+                command: modelData.command
+            }
         }
 
         Rectangle {

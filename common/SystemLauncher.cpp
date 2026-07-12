@@ -56,3 +56,21 @@ bool SystemLauncher::shutdown()
         }
     );
 }
+
+bool SystemLauncher::signOut()
+{
+    const auto env = QProcessEnvironment::systemEnvironment();
+    const QString sessionId = env.value(QStringLiteral("XDG_SESSION_ID"));
+
+    if (sessionId.isEmpty()) {
+        return false;
+    }
+
+    return QProcess::startDetached(
+        QStringLiteral("loginctl"),
+        {
+            QStringLiteral("terminate-session"),
+            sessionId
+        }
+    );
+}
