@@ -44,3 +44,29 @@ polkit.addRule(function(action, subject) {
 
     return polkit.Result.YES;
 });
+
+// The shell's Restart/Shut Down tiles run `systemctl reboot`/`poweroff`,
+// which ask logind for org.freedesktop.login1.reboot / power-off (or the
+// "-multiple-sessions" variant, e.g. while a session is still shutting
+// down from a previous attempt). The implicit "allow_active" policy for
+// those actions would normally cover this, but with no agent to answer
+// even an auth_admin_keep prompt for the multiple-sessions variant, grant
+// both directly to the outback user rather than have them hang silently.
+polkit.addRule(function(action, subject) {
+    var loginActions = [
+        "org.freedesktop.login1.reboot",
+        "org.freedesktop.login1.reboot-multiple-sessions",
+        "org.freedesktop.login1.power-off",
+        "org.freedesktop.login1.power-off-multiple-sessions"
+    ];
+
+    if (loginActions.indexOf(action.id) === -1) {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    if (subject.user !== "outback") {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    return polkit.Result.YES;
+});
