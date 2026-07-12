@@ -6,6 +6,7 @@ build_outback_app()
     source_dir="$1"
     build_dir="$2"
     binary_name="$3"
+    extra_cmake_arg="${4:-}"
 
     rm -rf "$build_dir"
 
@@ -14,7 +15,8 @@ build_outback_app()
         -B "$build_dir" \
         -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        ${extra_cmake_arg:+"$extra_cmake_arg"}
 
     cmake --build "$build_dir"
 
@@ -27,6 +29,14 @@ build_outback_app()
     test -x "/usr/bin/$binary_name"
 }
 
+# apps/settings and apps/files link the shared outback-common static lib.
+# The repo mirrors apps/<name> as flat siblings under /opt/outback-src/<name>,
+# one directory level shallower than in the repo (apps/settings vs.
+# /opt/outback-src/settings), so the default relative "../../common" each
+# CMakeLists.txt falls back to only resolves correctly in the repo checkout,
+# not here — point it at the mirrored common/ explicitly.
+COMMON_DIR_ARG="-DOUTBACK_COMMON_DIR=/opt/outback-src/common"
+
 build_outback_app \
     /opt/outback-src/shell \
     /tmp/outback-shell-build \
@@ -35,9 +45,29 @@ build_outback_app \
 build_outback_app \
     /opt/outback-src/settings \
     /tmp/outback-settings-build \
-    outback-settings
+    outback-settings \
+    "$COMMON_DIR_ARG"
+
+build_outback_app \
+    /opt/outback-src/files \
+    /tmp/outback-files-build \
+    outback-files \
+    "$COMMON_DIR_ARG"
+
+build_outback_app \
+    /opt/outback-src/terminal \
+    /tmp/outback-terminal-build \
+    outback-terminal
+
+build_outback_app \
+    /opt/outback-src/browser \
+    /tmp/outback-browser-build \
+    outback-browser
 
 rm -rf \
     /tmp/outback-shell-build \
     /tmp/outback-settings-build \
+    /tmp/outback-files-build \
+    /tmp/outback-terminal-build \
+    /tmp/outback-browser-build \
     /opt/outback-src

@@ -1,0 +1,28 @@
+// No polkit authentication agent runs in the Outback kiosk session, so the
+// default interactive auth_admin prompt for pkexec can never be satisfied.
+// Grant the specific, narrow set of actions the Outback apps invoke via
+// pkexec directly, rather than leaving them silently hanging or falling
+// back to a permissive sudoers rule.
+polkit.addRule(function(action, subject) {
+    if (action.id !== "org.freedesktop.policykit.exec") {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    if (subject.user !== "outback") {
+        return polkit.Result.NOT_HANDLED;
+    }
+
+    var allowedPrograms = [
+        "/usr/bin/hostnamectl",
+        "/usr/sbin/rfkill",
+        "/usr/bin/apt-get",
+        "/usr/bin/outback-toggle-autoupdates",
+        "/usr/bin/outback-launch-calamares"
+    ];
+
+    if (allowedPrograms.indexOf(action.lookup("program")) !== -1) {
+        return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});

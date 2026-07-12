@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+case "${1:-}" in
+    on)
+        exec systemctl enable --now apt-daily-upgrade.timer
+        ;;
+    off)
+        exec systemctl disable --now apt-daily-upgrade.timer
+        ;;
+    *)
+        echo "usage: outback-toggle-autoupdates on|off" >&2
+        exit 2
+        ;;
+esac

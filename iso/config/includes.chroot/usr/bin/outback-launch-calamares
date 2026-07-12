@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+# Invoked as: pkexec /usr/bin/outback-launch-calamares <xdg-runtime-dir> <wayland-display>
+#
+# pkexec sanitizes the child's environment before exec, so the calling
+# Wayland session's XDG_RUNTIME_DIR/WAYLAND_DISPLAY never reach us that way.
+# The caller passes them explicitly as arguments instead. Because this is a
+# fixed script path with no attacker-controlled program name, polkit can
+# allowlist it narrowly (see /etc/polkit-1/rules.d/49-outback-live.rules)
+# without also granting `pkexec env <anything>`.
+
+runtime_dir="${1:-}"
+wayland_display="${2:-}"
+
+if [ -z "$runtime_dir" ] || [ -z "$wayland_display" ]; then
+    echo "usage: outback-launch-calamares <xdg-runtime-dir> <wayland-display>" >&2
+    exit 2
+fi
+
+export XDG_RUNTIME_DIR="$runtime_dir"
+export WAYLAND_DISPLAY="$wayland_display"
+export QT_QPA_PLATFORM=wayland
+
+exec calamares

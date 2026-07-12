@@ -11,4 +11,6 @@ public:
     explicit SystemLauncher(QObject *parent = nullptr);
 
     Q_INVOKABLE bool launch(const QString &program);
+    Q_INVOKABLE bool launchInstaller();
+    Q_INVOKABLE bool isInstallerAvailable() const;
 };

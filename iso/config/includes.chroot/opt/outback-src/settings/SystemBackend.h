@@ -6,6 +6,8 @@
 #include <QStringList>
 #include <QVariantList>
 
+#include "CommandRunner.h"
+
 class SystemBackend final : public QObject
 {
     Q_OBJECT
@@ -20,6 +22,12 @@ class SystemBackend final : public QObject
         bool bluetoothScanning
         READ bluetoothScanning
         NOTIFY bluetoothScanningChanged
+    )
+
+    Q_PROPERTY(
+        bool wifiConnecting
+        READ wifiConnecting
+        NOTIFY wifiConnectingChanged
     )
 
 public:
@@ -44,6 +52,11 @@ public:
         const QString &ssid,
         const QString &password
     );
+    Q_INVOKABLE void connectToNetwork(
+        const QString &ssid,
+        const QString &password
+    );
+    Q_INVOKABLE bool forgetNetwork(const QString &ssid);
 
     Q_INVOKABLE bool bluetoothEnabled() const;
     Q_INVOKABLE bool setBluetoothEnabled(bool enabled);
@@ -53,12 +66,23 @@ public:
     Q_INVOKABLE QString operatingSystem() const;
     Q_INVOKABLE QString checkForUpdates();
 
+    Q_INVOKABLE bool autoUpdatesEnabled() const;
+    Q_INVOKABLE bool setAutoUpdatesEnabled(bool enabled);
+
+    Q_INVOKABLE bool offlineMode() const;
+    Q_INVOKABLE bool setOfflineMode(bool enabled);
+
+    Q_INVOKABLE bool nightColourEnabled() const;
+    Q_INVOKABLE bool setNightColour(bool enabled);
+
     bool wifiScanning() const;
     bool bluetoothScanning() const;
+    bool wifiConnecting() const;
 
 signals:
     void wifiScanningChanged();
     void bluetoothScanningChanged();
+    void wifiConnectingChanged();
 
     void wifiScanFinished(
         const QVariantList &networks,
@@ -70,23 +94,13 @@ signals:
         const QString &error
     );
 
+    void wifiConnectFinished(
+        bool success,
+        const QString &ssid,
+        const QString &error
+    );
+
 private:
-    struct CommandResult {
-        int exitCode;
-        QString standardOutput;
-        QString standardError;
-
-        bool succeeded() const
-        {
-            return exitCode == 0;
-        }
-    };
-
-    CommandResult run(
-        const QString &program,
-        const QStringList &arguments = {}
-    ) const;
-
     QVariantList parseWifiNetworks(
         const QString &output
     ) const;
@@ -97,7 +111,10 @@ private:
 
     QProcess m_wifiScanProcess;
     QProcess m_bluetoothScanProcess;
+    QProcess m_wifiConnectProcess;
+    QProcess m_nightColourProcess;
 
     bool m_wifiScanning = false;
     bool m_bluetoothScanning = false;
+    bool m_wifiConnecting = false;
 };

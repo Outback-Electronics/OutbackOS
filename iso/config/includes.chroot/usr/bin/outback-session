@@ -12,6 +12,20 @@ export WAYLAND_DISPLAY=wayland-0
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
 
+prefs_file="$HOME/.config/Outback Electronics/Outback.conf"
+
+if [ -f "$prefs_file" ]; then
+    scaling_index=$(sed -n 's/^scalingIndex=//p' "$prefs_file" | tail -n1)
+
+    case "$scaling_index" in
+        1) export QT_SCALE_FACTOR=1.25 ;;
+        2) export QT_SCALE_FACTOR=1.50 ;;
+        3) export QT_SCALE_FACTOR=1.75 ;;
+        4) export QT_SCALE_FACTOR=2.00 ;;
+        *) : ;;
+    esac
+fi
+
 exec dbus-run-session -- \
     weston \
         --backend=drm \
