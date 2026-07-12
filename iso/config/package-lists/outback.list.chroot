@@ -86,6 +86,8 @@ libvterm-dev
 qt6-webengine-dev
 qml6-module-qtwebengine
 
+qt6-svg-dev
+
 calamares
 calamares-settings-debian
 os-prober

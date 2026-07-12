@@ -7,23 +7,55 @@ Window {
     width: 960
     height: 600
     visible: true
-    title: "Outback OS — Boot Splash Preview"
-    color: "#0D1115"
+    title: "Outback OS — Boot Splash"
+    color: "#030811"
 
-    readonly property color accentColour: "#D9732F"
-    readonly property color textPrimary: "#F4F6F7"
-    readonly property color textSecondary: "#AEB8C0"
+    // autoExit is a root context property set by main.cpp from
+    // OUTBACK_SPLASH_AUTOEXIT, which the labwc autostart script sets for the
+    // real boot sequence: fullscreen, borderless, plays once, then quits.
+    // Unset (local preview): a normal window that loops - click or press
+    // Space to replay.
+    flags: autoExit ? (Qt.Window | Qt.FramelessWindowHint) : Qt.Window
+    visibility: autoExit ? Window.FullScreen : Window.Windowed
+
+    // Genuine pixel-exact vector reconstruction of the approved logo, split
+    // into independently-loadable object files (splash/layers/*.svg) - every
+    // shape (ring, sky, stars, kangaroo, windmill, mark-space, and every
+    // individual letter) is its own file, verified to recombine into the
+    // source image with zero differing pixels. No bitmap asset anywhere.
+    readonly property real badgeSize: 380
+    readonly property real aspect: 461 / 492
+
+    readonly property var outbackLetters: [
+        "outback-letter-1", "outback-letter-2", "outback-letter-3",
+        "outback-letter-4", "outback-letter-5", "outback-letter-6",
+        "outback-letter-7"
+    ]
+    readonly property var osLetters: ["os-letter-1", "os-letter-2"]
+    readonly property var tagline1Letters: [
+        "tagline1-letter-1", "tagline1-letter-2", "tagline1-letter-3",
+        "tagline1-letter-4", "tagline1-letter-5", "tagline1-letter-6",
+        "tagline1-letter-7", "tagline1-letter-8", "tagline1-letter-9",
+        "tagline1-letter-10", "tagline1-letter-11", "tagline1-letter-12",
+        "tagline1-letter-13"
+    ]
+    readonly property var tagline2Letters: [
+        "tagline2-letter-1", "tagline2-letter-2", "tagline2-letter-3",
+        "tagline2-letter-4", "tagline2-letter-5", "tagline2-letter-6",
+        "tagline2-letter-7", "tagline2-letter-8", "tagline2-letter-9",
+        "tagline2-letter-10", "tagline2-letter-11", "tagline2-letter-12",
+        "tagline2-letter-13"
+    ]
 
     Rectangle {
-        id: backgroundRect
-
         anchors.fill: parent
-        focus: true
 
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#182027" }
-            GradientStop { position: 1.0; color: "#0D1115" }
+            GradientStop { position: 0.0; color: "#081524" }
+            GradientStop { position: 1.0; color: "#030811" }
         }
+
+        focus: true
 
         MouseArea {
             anchors.fill: parent
@@ -37,139 +69,134 @@ Window {
         }
     }
 
+    Canvas {
+        id: glowCanvas
+
+        anchors.centerIn: parent
+        width: window.badgeSize * 1.7
+        height: window.badgeSize * 1.7 * window.aspect
+
+        property real intensity: 0.5
+
+        onIntensityChanged: requestPaint()
+
+        onPaint: {
+            const ctx = getContext("2d")
+            ctx.reset()
+
+            const cx = width / 2
+            const cy = height / 2
+            const radius = Math.min(width, height) / 2
+
+            const gradient = ctx.createRadialGradient(
+                cx, cy, radius * 0.2,
+                cx, cy, radius
+            )
+            gradient.addColorStop(0, Qt.rgba(0.03, 0.596, 0.992, 0.32 * intensity))
+            gradient.addColorStop(1, Qt.rgba(0.03, 0.596, 0.992, 0))
+
+            ctx.fillStyle = gradient
+            ctx.fillRect(0, 0, width, height)
+        }
+
+        SequentialAnimation on intensity {
+            id: breatheAnimation
+
+            loops: Animation.Infinite
+            running: false
+
+            NumberAnimation { to: 1.0; duration: 1700; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 0.5; duration: 1700; easing.type: Easing.InOutSine }
+        }
+    }
+
     Item {
         id: badge
 
         anchors.centerIn: parent
-        width: 260
-        height: 260
+        width: window.badgeSize
+        height: window.badgeSize * window.aspect
 
-        // Soft breathing glow behind the ring, drawn as a radial gradient
-        Canvas {
-            id: glowCanvas
+        Image { anchors.fill: parent; source: "layers/background.svg"; smooth: true }
 
+        Item {
+            id: sceneLayer
             anchors.fill: parent
-            anchors.margins: -70
+            opacity: 0
 
-            property real intensity: 0.6
+            Image { anchors.fill: parent; source: "layers/sky.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/stars.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/kangaroo.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/windmill.svg"; smooth: true }
+        }
 
-            onIntensityChanged: requestPaint()
+        Image {
+            id: ringLayer
+            anchors.fill: parent
+            source: "layers/ring.svg"
+            smooth: true
+            opacity: 0
+            scale: 0.9
 
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.reset()
-
-                const cx = width / 2
-                const cy = height / 2
-                const radius = Math.min(width, height) / 2
-
-                const gradient = ctx.createRadialGradient(
-                    cx, cy, radius * 0.15,
-                    cx, cy, radius
-                )
-                gradient.addColorStop(0, Qt.rgba(0.851, 0.451, 0.184, 0.35 * intensity))
-                gradient.addColorStop(1, Qt.rgba(0.851, 0.451, 0.184, 0))
-
-                ctx.fillStyle = gradient
-                ctx.fillRect(0, 0, width, height)
-            }
-
-            SequentialAnimation on intensity {
-                id: breatheAnimation
+            SequentialAnimation on rotation {
+                id: idleSpin
 
                 loops: Animation.Infinite
                 running: false
 
-                NumberAnimation { to: 1.0; duration: 1400; easing.type: Easing.InOutSine }
-                NumberAnimation { to: 0.6; duration: 1400; easing.type: Easing.InOutSine }
+                NumberAnimation { from: 0; to: 360; duration: 9000; easing.type: Easing.Linear }
             }
         }
 
-        // The ring itself: a track colour plus an animated accent-coloured
-        // sweep that "draws itself in" from 0 to a full circle.
-        Canvas {
-            id: ringCanvas
-
+        Item {
+            id: markLayer
             anchors.fill: parent
-            property real sweep: 0
+            opacity: 0
+            scale: 0.92
 
-            onSweepChanged: requestPaint()
+            Image { anchors.fill: parent; source: "layers/mark-space.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/letter-o-big.svg"; smooth: true }
+            Image { anchors.fill: parent; source: "layers/letter-s-big.svg"; smooth: true }
 
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.reset()
-
-                const cx = width / 2
-                const cy = height / 2
-                const radius = Math.min(width, height) / 2 - 12
-
-                ctx.lineWidth = 10
-                ctx.lineCap = "round"
-
-                ctx.strokeStyle = "#252E36"
-                ctx.beginPath()
-                ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-                ctx.stroke()
-
-                if (sweep > 0) {
-                    ctx.strokeStyle = window.accentColour
-                    ctx.beginPath()
-                    ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + sweep)
-                    ctx.stroke()
+            Repeater {
+                model: window.outbackLetters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
                 }
             }
-        }
 
-        Row {
-            id: mark
-
-            anchors.centerIn: parent
-            spacing: 2
-            opacity: 0
-            scale: 0.8
-
-            Text {
-                text: "O"
-                color: window.textPrimary
-                font.pixelSize: 84
-                font.bold: true
+            Repeater {
+                model: window.osLetters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
             }
 
-            Text {
-                text: "S"
-                color: window.accentColour
-                font.pixelSize: 84
-                font.bold: true
+            Repeater {
+                model: window.tagline1Letters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
             }
-        }
-    }
 
-    Column {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: badge.bottom
-        anchors.topMargin: 36
-        spacing: 8
-
-        Text {
-            id: wordmark
-
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "OUTBACK OS"
-            color: window.textPrimary
-            font.pixelSize: 26
-            font.bold: true
-            font.letterSpacing: 4
-            opacity: 0
-        }
-
-        Text {
-            id: tagline
-
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "Built for where the signal ends."
-            color: window.textSecondary
-            font.pixelSize: 15
-            opacity: 0
+            Repeater {
+                model: window.tagline2Letters
+                delegate: Image {
+                    required property string modelData
+                    anchors.fill: parent
+                    source: "layers/" + modelData + ".svg"
+                    smooth: true
+                }
+            }
         }
     }
 
@@ -178,7 +205,7 @@ Window {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 24
         text: "Click or press Space to replay"
-        color: window.textSecondary
+        color: "#8FA5BD"
         font.pixelSize: 12
         opacity: 0.6
     }
@@ -187,38 +214,73 @@ Window {
         id: introSequence
 
         PropertyAction { target: breatheAnimation; property: "running"; value: false }
-        PropertyAction { target: ringCanvas; property: "sweep"; value: 0 }
-        PropertyAction { target: mark; property: "opacity"; value: 0 }
-        PropertyAction { target: mark; property: "scale"; value: 0.8 }
-        PropertyAction { target: wordmark; property: "opacity"; value: 0 }
-        PropertyAction { target: tagline; property: "opacity"; value: 0 }
-        PropertyAction { target: glowCanvas; property: "intensity"; value: 0.6 }
+        PropertyAction { target: idleSpin; property: "running"; value: false }
+        PropertyAction { target: glowCanvas; property: "intensity"; value: 0.5 }
+        PropertyAction { target: sceneLayer; property: "opacity"; value: 0 }
+        PropertyAction { target: ringLayer; property: "opacity"; value: 0 }
+        PropertyAction { target: ringLayer; property: "scale"; value: 0.9 }
+        PropertyAction { target: ringLayer; property: "rotation"; value: 0 }
+        PropertyAction { target: markLayer; property: "opacity"; value: 0 }
+        PropertyAction { target: markLayer; property: "scale"; value: 0.92 }
 
         NumberAnimation {
-            target: ringCanvas
-            property: "sweep"
-            to: Math.PI * 2
-            duration: 1100
-            easing.type: Easing.InOutCubic
+            target: sceneLayer
+            property: "opacity"
+            to: 1
+            duration: 500
+            easing.type: Easing.OutCubic
         }
 
         ParallelAnimation {
-            NumberAnimation { target: mark; property: "opacity"; to: 1; duration: 350 }
             NumberAnimation {
-                target: mark
-                property: "scale"
+                target: ringLayer
+                property: "opacity"
                 to: 1
-                duration: 350
+                duration: 650
+                easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+                target: ringLayer
+                property: "scale"
+                to: 1.0
+                duration: 650
+                easing.type: Easing.OutBack
+            }
+            NumberAnimation {
+                target: ringLayer
+                property: "rotation"
+                from: -50
+                to: 0
+                duration: 650
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        ParallelAnimation {
+            NumberAnimation { target: markLayer; property: "opacity"; to: 1; duration: 400 }
+            NumberAnimation {
+                target: markLayer
+                property: "scale"
+                to: 1.0
+                duration: 400
                 easing.type: Easing.OutBack
             }
         }
 
-        PauseAnimation { duration: 100 }
-
-        NumberAnimation { target: wordmark; property: "opacity"; to: 1; duration: 400 }
-        NumberAnimation { target: tagline; property: "opacity"; to: 1; duration: 400 }
-
         PropertyAction { target: breatheAnimation; property: "running"; value: true }
+        PropertyAction { target: idleSpin; property: "running"; value: true }
+
+        onRunningChanged: {
+            if (!running && autoExit) {
+                bootExitTimer.start()
+            }
+        }
+    }
+
+    Timer {
+        id: bootExitTimer
+        interval: 900
+        onTriggered: Qt.quit()
     }
 
     Component.onCompleted: introSequence.start()

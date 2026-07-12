@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QUrl>
 
 int main(int argc, char *argv[])
@@ -12,7 +13,18 @@ int main(int argc, char *argv[])
         "outbackelectronics.com.au"
     );
 
+    // Set by the labwc autostart script for the real boot sequence: play
+    // once, fullscreen, borderless, then quit so the session can proceed to
+    // the shell. Unset for local preview: windowed, loops, click/Space to
+    // replay (see splash/Main.qml).
+    const bool autoExit = qEnvironmentVariableIsSet("OUTBACK_SPLASH_AUTOEXIT");
+
     QQmlApplicationEngine engine;
+
+    engine.rootContext()->setContextProperty(
+        QStringLiteral("autoExit"),
+        autoExit
+    );
 
     QObject::connect(
         &engine,

@@ -69,6 +69,11 @@ build_outback_app \
     /tmp/outback-taskbar-build \
     outback-taskbar
 
+build_outback_app \
+    /opt/outback-src/splash \
+    /tmp/outback-splash-build \
+    outback-splash
+
 rm -rf \
     /tmp/outback-shell-build \
     /tmp/outback-settings-build \
@@ -76,4 +81,5 @@ rm -rf \
     /tmp/outback-terminal-build \
     /tmp/outback-browser-build \
     /tmp/outback-taskbar-build \
+    /tmp/outback-splash-build \
     /opt/outback-src
