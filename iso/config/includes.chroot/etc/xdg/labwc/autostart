@@ -1,4 +1,5 @@
 #!/bin/sh
 
+OUTBACK_SPLASH_AUTOEXIT=1 outback-splash
 outback-shell &
 outback-taskbar &
