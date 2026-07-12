@@ -5,7 +5,7 @@ project(outback-taskbar VERSION 0.1 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick WaylandClient)
+find_package(Qt6 REQUIRED COMPONENTS Quick WaylandClient DBus)
 find_package(LayerShellQt REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.5)
@@ -24,6 +24,10 @@ qt_add_executable(outback-taskbar
     ToplevelManager.h
     SignalBridge.cpp
     SignalBridge.h
+    NotificationServer.cpp
+    NotificationServer.h
+    NotificationsAdaptor.cpp
+    NotificationsAdaptor.h
 )
 
 qt6_generate_wayland_protocol_client_sources(outback-taskbar
@@ -38,7 +42,16 @@ qt_add_qml_module(outback-taskbar
     RESOURCE_PREFIX /
     QML_FILES
         Main.qml
+        TaskbarPanel.qml
         StartMenu.qml
+        Theme.qml
+        AppCatalog.qml
+        PinnedApps.qml
+        QuickSettingsPanel.qml
+        NotificationPanel.qml
+        NotificationToastHost.qml
+        CalendarFlyout.qml
+        WindowContextMenu.qml
     SOURCES
         ForeignToplevel.cpp
         ForeignToplevel.h
@@ -46,12 +59,17 @@ qt_add_qml_module(outback-taskbar
         ToplevelManager.h
         SignalBridge.cpp
         SignalBridge.h
+        NotificationServer.cpp
+        NotificationServer.h
+        NotificationsAdaptor.cpp
+        NotificationsAdaptor.h
 )
 
 target_link_libraries(outback-taskbar
     PRIVATE
         Qt6::Quick
         Qt6::WaylandClient
+        Qt6::DBus
         LayerShellQt::Interface
         outback-common
 )

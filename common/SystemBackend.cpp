@@ -2,11 +2,47 @@
 #include <algorithm>
 #include "SystemBackend.h"
 
+#include <QDir>
 #include <QFile>
 #include <QMap>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSysInfo>
+
+namespace {
+
+// The first /sys/class/power_supply entry whose "type" is "Battery".
+// Desktops and most VMs have no such entry, which callers treat as
+// "no battery" rather than an error.
+QString batterySupplyPath()
+{
+    QDir supplies(QStringLiteral("/sys/class/power_supply"));
+
+    const QStringList entries = supplies.entryList(
+        QDir::Dirs | QDir::NoDotAndDotDot
+    );
+
+    for (const QString &entry : entries) {
+        const QString path = supplies.filePath(entry);
+
+        QFile typeFile(path + QStringLiteral("/type"));
+
+        if (!typeFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            continue;
+        }
+
+        if (
+            QString::fromUtf8(typeFile.readAll()).trimmed()
+            == QStringLiteral("Battery")
+        ) {
+            return path;
+        }
+    }
+
+    return QString();
+}
+
+} // namespace
 
 SystemBackend::SystemBackend(QObject *parent)
     : QObject(parent)
@@ -458,7 +494,53 @@ bool SystemBackend::setBluetoothEnabled(bool enabled)
     return result.succeeded();
 }
 
+bool SystemBackend::batteryPresent() const
+{
+    return !batterySupplyPath().isEmpty();
+}
 
+int SystemBackend::batteryPercentage() const
+{
+    const QString path = batterySupplyPath();
+
+    if (path.isEmpty()) {
+        return -1;
+    }
+
+    QFile capacityFile(path + QStringLiteral("/capacity"));
+
+    if (!capacityFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return -1;
+    }
+
+    bool ok = false;
+    const int percentage = QString::fromUtf8(capacityFile.readAll())
+        .trimmed()
+        .toInt(&ok);
+
+    return ok ? qBound(0, percentage, 100) : -1;
+}
+
+bool SystemBackend::batteryCharging() const
+{
+    const QString path = batterySupplyPath();
+
+    if (path.isEmpty()) {
+        return false;
+    }
+
+    QFile statusFile(path + QStringLiteral("/status"));
+
+    if (!statusFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    const QString status =
+        QString::fromUtf8(statusFile.readAll()).trimmed();
+
+    return status == QStringLiteral("Charging")
+        || status == QStringLiteral("Full");
+}
 
 
 

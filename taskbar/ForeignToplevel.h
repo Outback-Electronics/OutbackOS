@@ -35,6 +35,7 @@ public:
     Q_INVOKABLE void requestActivate();
     Q_INVOKABLE void requestClose();
     Q_INVOKABLE void requestToggleMinimize();
+    Q_INVOKABLE void requestToggleMaximize();
 
 signals:
     void titleChanged();
