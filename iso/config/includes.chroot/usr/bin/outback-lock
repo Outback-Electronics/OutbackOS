@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+# Mirrors outback-toggle-start-menu: labwc keybinds and swayidle can only
+# run commands, not call into the already-running taskbar process, so this
+# signals it. SignalBridge (taskbar/SignalBridge.cpp) turns SIGUSR2 into a
+# lockRequested() on the taskbar's Qt event loop, which shows LockScreen.qml.
+
+pid_file="${XDG_RUNTIME_DIR:-/tmp}/outback-taskbar.pid"
+
+if [ -f "$pid_file" ]; then
+    kill -USR2 "$(cat "$pid_file")" 2>/dev/null || true
+fi

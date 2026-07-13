@@ -3,7 +3,10 @@
 #include <QQmlContext>
 #include <QUrl>
 
+#include "LockBackend.h"
+#include "NotificationServer.h"
 #include "SignalBridge.h"
+#include "SystemBackend.h"
 #include "SystemLauncher.h"
 
 int main(int argc, char *argv[])
@@ -22,8 +25,16 @@ int main(int argc, char *argv[])
     );
 
     SystemLauncher launcher;
+    SystemBackend systemBackend;
     SignalBridge signalBridge;
     SignalBridge::writePidFile();
+    LockBackend lockBackend;
+
+    NotificationServer notificationServer;
+
+    // Not fatal: if another notification daemon already owns the name,
+    // Outback's panel simply stays empty rather than fighting over it.
+    notificationServer.connectToBus();
 
     QQmlApplicationEngine engine;
 
@@ -33,8 +44,23 @@ int main(int argc, char *argv[])
     );
 
     engine.rootContext()->setContextProperty(
+        "systemBackend",
+        &systemBackend
+    );
+
+    engine.rootContext()->setContextProperty(
+        "notificationServer",
+        &notificationServer
+    );
+
+    engine.rootContext()->setContextProperty(
         "signalBridge",
         &signalBridge
+    );
+
+    engine.rootContext()->setContextProperty(
+        "lockBackend",
+        &lockBackend
     );
 
     QObject::connect(

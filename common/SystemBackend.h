@@ -30,6 +30,12 @@ class SystemBackend final : public QObject
         NOTIFY wifiConnectingChanged
     )
 
+    Q_PROPERTY(
+        bool installingUpdates
+        READ installingUpdates
+        NOTIFY installingUpdatesChanged
+    )
+
 public:
     explicit SystemBackend(QObject *parent = nullptr);
 
@@ -70,6 +76,7 @@ public:
     Q_INVOKABLE QString kernelVersion() const;
     Q_INVOKABLE QString operatingSystem() const;
     Q_INVOKABLE QString checkForUpdates();
+    Q_INVOKABLE void installUpdates();
 
     Q_INVOKABLE bool autoUpdatesEnabled() const;
     Q_INVOKABLE bool setAutoUpdatesEnabled(bool enabled);
@@ -80,14 +87,19 @@ public:
     Q_INVOKABLE bool nightColourEnabled() const;
     Q_INVOKABLE bool setNightColour(bool enabled);
 
+    Q_INVOKABLE bool setAutoLockMinutes(int minutes);
+    Q_INVOKABLE bool lockScreenNow();
+
     bool wifiScanning() const;
     bool bluetoothScanning() const;
     bool wifiConnecting() const;
+    bool installingUpdates() const;
 
 signals:
     void wifiScanningChanged();
     void bluetoothScanningChanged();
     void wifiConnectingChanged();
+    void installingUpdatesChanged();
 
     void wifiScanFinished(
         const QVariantList &networks,
@@ -105,6 +117,11 @@ signals:
         const QString &error
     );
 
+    void updatesInstallFinished(
+        bool success,
+        const QString &message
+    );
+
 private:
     QVariantList parseWifiNetworks(
         const QString &output
@@ -118,8 +135,10 @@ private:
     QProcess m_bluetoothScanProcess;
     QProcess m_wifiConnectProcess;
     QProcess m_nightColourProcess;
+    QProcess m_updatesInstallProcess;
 
     bool m_wifiScanning = false;
     bool m_bluetoothScanning = false;
     bool m_wifiConnecting = false;
+    bool m_installingUpdates = false;
 };

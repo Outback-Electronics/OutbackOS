@@ -17,8 +17,6 @@ add_subdirectory(${OUTBACK_COMMON_DIR} ${CMAKE_CURRENT_BINARY_DIR}/outback-commo
 
 qt_add_executable(outback-settings
     main.cpp
-    SystemBackend.cpp
-    SystemBackend.h
 )
 
 qt_add_qml_module(outback-settings
@@ -27,6 +25,8 @@ qt_add_qml_module(outback-settings
     RESOURCE_PREFIX /
     QML_FILES
         Main.qml
+    RESOURCES
+        icons/outback-mark.svg
 )
 
 target_link_libraries(outback-settings

@@ -24,6 +24,13 @@ qt_add_qml_module(outback-shell
     VERSION 1.0
     QML_FILES
         Main.qml
+    RESOURCES
+        icons/outback-mark.svg
+        icons/download.svg
+        icons/terminal.svg
+        icons/folder.svg
+        icons/globe.svg
+        icons/gear.svg
 )
 
 target_link_libraries(outback-shell

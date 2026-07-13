@@ -38,6 +38,7 @@ SignalBridge::SignalBridge(QObject *parent)
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_RESTART;
     sigaction(SIGUSR1, &action, nullptr);
+    sigaction(SIGUSR2, &action, nullptr);
 }
 
 SignalBridge::~SignalBridge()
@@ -73,16 +74,18 @@ bool SignalBridge::writePidFile()
 
 void SignalBridge::unixSignalHandler(int signum)
 {
-    Q_UNUSED(signum);
-
-    const char byte = 1;
+    const char byte = static_cast<char>(signum == SIGUSR2 ? 2 : 1);
     ::write(s_socketPair[0], &byte, sizeof(byte));
 }
 
 void SignalBridge::handleSignal()
 {
-    char byte;
+    char byte = 0;
     ::read(s_socketPair[1], &byte, sizeof(byte));
 
-    emit toggleStartMenuRequested();
+    if (byte == 2) {
+        emit lockRequested();
+    } else {
+        emit toggleStartMenuRequested();
+    }
 }

@@ -47,6 +47,14 @@ ApplicationWindow {
 
     property var accentColours: ["#D9732F", "#3FA7D6", "#4C9F70"]
 
+    property var wallpaperPresets: [
+        { name: "Outback Dusk", top: "#182027", bottom: "#0D1115" },
+        { name: "Desert Glow", top: "#3A2418", bottom: "#120C08" },
+        { name: "Ocean Deep", top: "#152833", bottom: "#050B0F" },
+        { name: "Spinifex", top: "#1A2A1E", bottom: "#0A120C" },
+        { name: "Midnight", top: "#1A1A24", bottom: "#08080C" }
+    ]
+
     property string statusMessage: ""
 
     function showError(message) {
@@ -68,7 +76,107 @@ ApplicationWindow {
         property int accentIndex: 0
         property int scalingIndex: 0
         property bool animationsEnabled: true
+        property int wallpaperIndex: 0
     }
+
+    Settings {
+        id: desktopPrefs
+
+        category: "desktop"
+
+        property string shortcutsJson: "[]"
+    }
+
+    property var shortcuts: []
+
+    function loadShortcuts() {
+        try {
+            const parsed = JSON.parse(desktopPrefs.shortcutsJson)
+            shortcuts = Array.isArray(parsed) ? parsed : []
+        } catch (e) {
+            shortcuts = []
+        }
+    }
+
+    function saveShortcuts() {
+        desktopPrefs.shortcutsJson = JSON.stringify(shortcuts)
+    }
+
+    function gridPositionForIndex(index) {
+        const cellWidth = 104
+        const cellHeight = 116
+        const marginX = 40
+        const marginY = 140
+        const rows = Math.max(
+            1,
+            Math.floor((root.height - marginY - 40) / cellHeight)
+        )
+
+        const col = Math.floor(index / rows)
+        const row = index % rows
+
+        return {
+            x: marginX + col * cellWidth,
+            y: marginY + row * cellHeight
+        }
+    }
+
+    function addShortcut(title, icon, command) {
+        if (shortcuts.some(s => s.command === command)) {
+            root.showError(title + " is already on the desktop.")
+            return
+        }
+
+        const pos = root.gridPositionForIndex(shortcuts.length)
+
+        shortcuts = shortcuts.concat([{
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+            title: title,
+            icon: icon,
+            command: command,
+            x: pos.x,
+            y: pos.y
+        }])
+
+        root.saveShortcuts()
+    }
+
+    function removeShortcut(shortcutId) {
+        shortcuts = shortcuts.filter(s => s.id !== shortcutId)
+        root.saveShortcuts()
+    }
+
+    function moveShortcut(shortcutId, x, y) {
+        shortcuts = shortcuts.map(s =>
+            s.id === shortcutId ? Object.assign({}, s, { x: x, y: y }) : s
+        )
+        root.saveShortcuts()
+    }
+
+    function launchShortcut(shortcutId) {
+        const shortcut = shortcuts.find(s => s.id === shortcutId)
+        if (!shortcut) {
+            return
+        }
+
+        if (!systemLauncher.launch(shortcut.command)) {
+            root.showError("Couldn't open " + shortcut.title + ".")
+        }
+    }
+
+    function autoArrangeShortcuts() {
+        shortcuts = shortcuts.map((s, index) =>
+            Object.assign({}, s, root.gridPositionForIndex(index))
+        )
+        root.saveShortcuts()
+    }
+
+    function cycleWallpaper() {
+        prefs.wallpaperIndex =
+            (prefs.wallpaperIndex + 1) % wallpaperPresets.length
+    }
+
+    Component.onCompleted: root.loadShortcuts()
 
     Rectangle {
         anchors.fill: parent
@@ -76,13 +184,119 @@ ApplicationWindow {
         gradient: Gradient {
             GradientStop {
                 position: 0.0
-                color: "#182027"
+                color: root.wallpaperPresets[prefs.wallpaperIndex].top
             }
 
             GradientStop {
                 position: 1.0
-                color: "#0D1115"
+                color: root.wallpaperPresets[prefs.wallpaperIndex].bottom
             }
+        }
+    }
+
+    MouseArea {
+        id: desktopContextArea
+
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+
+        onClicked: (mouse) => {
+            if (mouse.button === Qt.RightButton) {
+                desktopMenu.popup()
+            }
+        }
+    }
+
+    Item {
+        id: desktopIconLayer
+        anchors.fill: parent
+
+        Repeater {
+            model: root.shortcuts
+
+            delegate: DesktopIcon {
+                required property var modelData
+
+                shortcutId: modelData.id
+                title: modelData.title
+                iconSource: modelData.icon
+                command: modelData.command
+                posX: modelData.x
+                posY: modelData.y
+            }
+        }
+    }
+
+    Menu {
+        id: desktopMenu
+
+        Menu {
+            title: "Add shortcut"
+
+            MenuItem {
+                text: "Terminal"
+                onTriggered: root.addShortcut(
+                    "Terminal", "icons/terminal.svg", "/usr/bin/outback-terminal"
+                )
+            }
+
+            MenuItem {
+                text: "Files"
+                onTriggered: root.addShortcut(
+                    "Files", "icons/folder.svg", "/usr/bin/outback-files"
+                )
+            }
+
+            MenuItem {
+                text: "Browser"
+                onTriggered: root.addShortcut(
+                    "Browser", "icons/globe.svg", "/usr/bin/outback-browser"
+                )
+            }
+
+            MenuItem {
+                text: "Settings"
+                onTriggered: root.addShortcut(
+                    "Settings", "icons/gear.svg", "/usr/bin/outback-settings"
+                )
+            }
+        }
+
+        MenuItem {
+            text: "Refresh"
+            onTriggered: root.autoArrangeShortcuts()
+        }
+
+        MenuSeparator {}
+
+        MenuItem {
+            text: "Change wallpaper"
+            onTriggered: root.cycleWallpaper()
+        }
+
+        MenuItem {
+            text: "Personalize..."
+            onTriggered: {
+                if (!systemLauncher.launch("/usr/bin/outback-settings")) {
+                    root.showError("Couldn't open Settings.")
+                }
+            }
+        }
+    }
+
+    Menu {
+        id: iconMenu
+
+        property string targetId: ""
+
+        MenuItem {
+            text: "Open"
+            onTriggered: root.launchShortcut(iconMenu.targetId)
+        }
+
+        MenuItem {
+            text: "Remove from desktop"
+            onTriggered: root.removeShortcut(iconMenu.targetId)
         }
     }
 
@@ -101,12 +315,11 @@ ApplicationWindow {
                 radius: 14
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "O"
-                    color: "white"
-                    font.pixelSize: 30
-                    font.bold: true
+                    source: "icons/outback-mark.svg"
+                    sourceSize.width: 26
+                    sourceSize.height: 26
                 }
             }
 
@@ -188,7 +401,7 @@ ApplicationWindow {
 
             AppTile {
                 title: "Install Outback OS"
-                symbol: "I"
+                icon: "icons/download.svg"
                 command: ""
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
@@ -223,7 +436,7 @@ ApplicationWindow {
         id: tile
 
         required property string title
-        required property string symbol
+        required property string icon
         required property string command
         property bool isInstaller: false
 
@@ -266,12 +479,11 @@ ApplicationWindow {
                 radius: 18
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: tile.symbol
-                    color: "white"
-                    font.pixelSize: 29
-                    font.bold: true
+                    source: tile.icon
+                    sourceSize.width: 30
+                    sourceSize.height: 30
                 }
             }
 
@@ -307,6 +519,103 @@ ApplicationWindow {
                 if (!systemLauncher.launch(tile.command)) {
                     root.showError("Couldn't open " + tile.title + ".")
                 }
+            }
+        }
+    }
+
+    component DesktopIcon: Item {
+        id: icon
+
+        // Named iconSource rather than icon: this Item's own id is "icon"
+        // (used throughout below), and a property can't share that name.
+        required property string shortcutId
+        required property string title
+        required property string iconSource
+        required property string command
+        required property real posX
+        required property real posY
+
+        x: posX
+        y: posY
+        width: 92
+        height: 104
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 14
+            color: iconMouse.containsMouse || iconMouse.drag.active
+                   ? "#2A343D"
+                   : "transparent"
+
+            Behavior on color {
+                enabled: prefs.animationsEnabled
+
+                ColorAnimation {
+                    duration: 120
+                }
+            }
+        }
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 8
+
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                width: 48
+                height: 48
+                radius: 14
+                color: root.primary
+
+                Image {
+                    anchors.centerIn: parent
+                    source: icon.iconSource
+                    sourceSize.width: 22
+                    sourceSize.height: 22
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 88
+                horizontalAlignment: Text.AlignHCenter
+                text: icon.title
+                color: root.textPrimary
+                font.pixelSize: 12
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
+            }
+        }
+
+        MouseArea {
+            id: iconMouse
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+            drag.target: icon
+            drag.axis: Drag.XAndYAxis
+            drag.minimumX: 0
+            drag.minimumY: 0
+            drag.maximumX: root.width - icon.width
+            drag.maximumY: root.height - icon.height
+
+            onReleased: {
+                root.moveShortcut(icon.shortcutId, icon.x, icon.y)
+            }
+
+            onClicked: (mouse) => {
+                if (mouse.button === Qt.RightButton) {
+                    iconMenu.targetId = icon.shortcutId
+                    iconMenu.popup()
+                    return
+                }
+
+                root.launchShortcut(icon.shortcutId)
             }
         }
     }

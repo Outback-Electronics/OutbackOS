@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QUrl>
 
+#include "LockBackend.h"
 #include "NotificationServer.h"
 #include "SignalBridge.h"
 #include "SystemBackend.h"
@@ -27,6 +28,7 @@ int main(int argc, char *argv[])
     SystemBackend systemBackend;
     SignalBridge signalBridge;
     SignalBridge::writePidFile();
+    LockBackend lockBackend;
 
     NotificationServer notificationServer;
 
@@ -54,6 +56,11 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "signalBridge",
         &signalBridge
+    );
+
+    engine.rootContext()->setContextProperty(
+        "lockBackend",
+        &lockBackend
     );
 
     QObject::connect(

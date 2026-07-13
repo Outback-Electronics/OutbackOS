@@ -15,7 +15,21 @@ bool SystemLauncher::launch(const QString &program)
         return false;
     }
 
-    return QProcess::startDetached(program);
+    // outback-taskbar sets QT_WAYLAND_SHELL_INTEGRATION=layer-shell on
+    // itself so its own window renders as a Wayland layer-shell panel, but
+    // that's a process-wide env var, and QProcess inherits it by default.
+    // Without stripping it, apps launched from the taskbar (pinned icons,
+    // the start menu) would also try to open as layer-shell surfaces
+    // instead of ordinary xdg-shell toplevels, which have no decoration,
+    // no resize, and no close/minimize/maximize.
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.remove(QStringLiteral("QT_WAYLAND_SHELL_INTEGRATION"));
+
+    QProcess process;
+    process.setProgram(program);
+    process.setProcessEnvironment(env);
+
+    return process.startDetached();
 }
 
 bool SystemLauncher::isInstallerAvailable() const
@@ -53,6 +67,24 @@ bool SystemLauncher::shutdown()
         QStringLiteral("systemctl"),
         {
             QStringLiteral("poweroff")
+        }
+    );
+}
+
+bool SystemLauncher::signOut()
+{
+    const auto env = QProcessEnvironment::systemEnvironment();
+    const QString sessionId = env.value(QStringLiteral("XDG_SESSION_ID"));
+
+    if (sessionId.isEmpty()) {
+        return false;
+    }
+
+    return QProcess::startDetached(
+        QStringLiteral("loginctl"),
+        {
+            QStringLiteral("terminate-session"),
+            sessionId
         }
     );
 }

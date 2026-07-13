@@ -2,7 +2,7 @@
 
 #include <QGuiApplication>
 
-#include <cstddef>
+#include <cstring>
 
 ForeignToplevel::ForeignToplevel(struct ::zwlr_foreign_toplevel_handle_v1 *object, QObject *parent)
     : QObject(parent)
@@ -45,6 +45,15 @@ void ForeignToplevel::requestToggleMinimize()
     }
 }
 
+void ForeignToplevel::requestToggleMaximize()
+{
+    if (m_maximized) {
+        unset_maximized();
+    } else {
+        set_maximized();
+    }
+}
+
 void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_title(const QString &title)
 {
     if (m_title == title)
@@ -61,7 +70,7 @@ void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_app_id(const QString &app_
     emit appIdChanged();
 }
 
-void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_state(struct wl_array *state)
+void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_state(const QByteArray &state)
 {
     // The wire format is a densely packed array of uint32_t entries, each
     // one a zwlr_foreign_toplevel_handle_v1::state enum value. Wayland never
@@ -70,14 +79,11 @@ void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_state(struct wl_array *sta
     m_pendingMinimized = false;
     m_pendingMaximized = false;
 
-    if (!state || !state->data)
-        return;
+    uint32_t value = 0;
+    for (qsizetype offset = 0; offset + qsizetype(sizeof(value)) <= state.size(); offset += sizeof(value)) {
+        std::memcpy(&value, state.constData() + offset, sizeof(value));
 
-    const auto *values = static_cast<const uint32_t *>(state->data);
-    const std::size_t count = state->size / sizeof(uint32_t);
-
-    for (std::size_t index = 0; index < count; ++index) {
-        switch (values[index]) {
+        switch (value) {
         case state_maximized:
             m_pendingMaximized = true;
             break;
