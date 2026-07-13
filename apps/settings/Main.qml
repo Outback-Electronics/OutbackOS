@@ -30,6 +30,14 @@ ApplicationWindow {
     property var autoLockOptions: ["Never", "5 minutes", "10 minutes", "30 minutes"]
     property var autoLockMinutes: [0, 5, 10, 30]
 
+    property var wallpaperPresets: [
+        { name: "Outback Dusk", top: "#182027", bottom: "#0D1115" },
+        { name: "Desert Glow", top: "#3A2418", bottom: "#120C08" },
+        { name: "Ocean Deep", top: "#152833", bottom: "#050B0F" },
+        { name: "Spinifex", top: "#1A2A1E", bottom: "#0A120C" },
+        { name: "Midnight", top: "#1A1A24", bottom: "#08080C" }
+    ]
+
     Settings {
         id: prefs
 
@@ -39,6 +47,7 @@ ApplicationWindow {
         property int scalingIndex: 0
         property bool animationsEnabled: true
         property int themeIndex: 0
+        property int wallpaperIndex: 0
     }
 
     Settings {
@@ -600,6 +609,45 @@ ApplicationWindow {
 
                         onActivated: {
                             prefs.themeIndex = currentIndex
+                        }
+                    }
+                }
+
+                SettingCard {
+                    title: "Wallpaper"
+                    description: root.wallpaperPresets[wallpaperRow.currentIndex].name
+
+                    Row {
+                        id: wallpaperRow
+
+                        property int currentIndex: prefs.wallpaperIndex
+
+                        spacing: 12
+
+                        Repeater {
+                            model: root.wallpaperPresets
+
+                            delegate: Rectangle {
+                                required property var modelData
+                                required property int index
+
+                                width: 46
+                                height: 36
+                                radius: 8
+                                border.width: wallpaperRow.currentIndex === index ? 3 : 0
+                                border.color: root.textPrimaryColor
+
+                                gradient: Gradient {
+                                    GradientStop { position: 0.0; color: modelData.top }
+                                    GradientStop { position: 1.0; color: modelData.bottom }
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: prefs.wallpaperIndex = index
+                                }
+                            }
                         }
                     }
                 }
