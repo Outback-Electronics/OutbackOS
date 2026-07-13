@@ -9,7 +9,7 @@ QtObject {
         {
             id: "settings",
             label: "Settings",
-            symbol: "S",
+            icon: "icons/gear.svg",
             command: "/usr/bin/outback-settings",
             accent: "#3FA7D6",
             pinned: false
@@ -17,7 +17,7 @@ QtObject {
         {
             id: "browser",
             label: "Browser",
-            symbol: "B",
+            icon: "icons/globe.svg",
             command: "/usr/bin/outback-browser",
             accent: "#4C9F70",
             pinned: false
@@ -25,7 +25,7 @@ QtObject {
         {
             id: "terminal",
             label: "Terminal",
-            symbol: "T",
+            icon: "icons/terminal.svg",
             command: "/usr/bin/outback-terminal",
             accent: "#D9732F",
             pinned: true
@@ -33,7 +33,7 @@ QtObject {
         {
             id: "files",
             label: "Files",
-            symbol: "F",
+            icon: "icons/folder.svg",
             command: "/usr/bin/outback-files",
             accent: "#9B6FD1",
             pinned: true

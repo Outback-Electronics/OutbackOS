@@ -1,0 +1,5 @@
+# PAM service for outback-taskbar's lock screen (LockBackend.cpp /
+# LockScreen.qml). Delegates entirely to the distribution's standard
+# authentication stack, the same one used for local console/su logins,
+# rather than defining bespoke rules.
+@include common-auth

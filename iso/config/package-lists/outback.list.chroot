@@ -58,6 +58,7 @@ build-essential
 cmake
 ninja-build
 pkg-config
+libpam0g-dev
 
 qt6-base-dev
 qt6-base-private-dev
@@ -80,6 +81,7 @@ qml6-module-qt-labs-folderlistmodel
 
 unattended-upgrades
 gammastep
+swayidle
 udisks2
 libvterm-dev
 

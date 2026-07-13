@@ -121,7 +121,7 @@ ApplicationWindow {
         }
     }
 
-    function addShortcut(title, symbol, command) {
+    function addShortcut(title, icon, command) {
         if (shortcuts.some(s => s.command === command)) {
             root.showError(title + " is already on the desktop.")
             return
@@ -132,7 +132,7 @@ ApplicationWindow {
         shortcuts = shortcuts.concat([{
             id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
             title: title,
-            symbol: symbol,
+            icon: icon,
             command: command,
             x: pos.x,
             y: pos.y
@@ -219,7 +219,7 @@ ApplicationWindow {
 
                 shortcutId: modelData.id
                 title: modelData.title
-                symbol: modelData.symbol
+                iconSource: modelData.icon
                 command: modelData.command
                 posX: modelData.x
                 posY: modelData.y
@@ -236,28 +236,28 @@ ApplicationWindow {
             MenuItem {
                 text: "Terminal"
                 onTriggered: root.addShortcut(
-                    "Terminal", "T", "/usr/bin/outback-terminal"
+                    "Terminal", "icons/terminal.svg", "/usr/bin/outback-terminal"
                 )
             }
 
             MenuItem {
                 text: "Files"
                 onTriggered: root.addShortcut(
-                    "Files", "F", "/usr/bin/outback-files"
+                    "Files", "icons/folder.svg", "/usr/bin/outback-files"
                 )
             }
 
             MenuItem {
                 text: "Browser"
                 onTriggered: root.addShortcut(
-                    "Browser", "B", "/usr/bin/outback-browser"
+                    "Browser", "icons/globe.svg", "/usr/bin/outback-browser"
                 )
             }
 
             MenuItem {
                 text: "Settings"
                 onTriggered: root.addShortcut(
-                    "Settings", "S", "/usr/bin/outback-settings"
+                    "Settings", "icons/gear.svg", "/usr/bin/outback-settings"
                 )
             }
         }
@@ -315,12 +315,11 @@ ApplicationWindow {
                 radius: 14
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "O"
-                    color: "white"
-                    font.pixelSize: 30
-                    font.bold: true
+                    source: "icons/outback-mark.svg"
+                    sourceSize.width: 26
+                    sourceSize.height: 26
                 }
             }
 
@@ -402,7 +401,7 @@ ApplicationWindow {
 
             AppTile {
                 title: "Install Outback OS"
-                symbol: "I"
+                icon: "icons/download.svg"
                 command: ""
                 isInstaller: true
                 visible: systemLauncher.isInstallerAvailable()
@@ -437,7 +436,7 @@ ApplicationWindow {
         id: tile
 
         required property string title
-        required property string symbol
+        required property string icon
         required property string command
         property bool isInstaller: false
 
@@ -480,12 +479,11 @@ ApplicationWindow {
                 radius: 18
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: tile.symbol
-                    color: "white"
-                    font.pixelSize: 29
-                    font.bold: true
+                    source: tile.icon
+                    sourceSize.width: 30
+                    sourceSize.height: 30
                 }
             }
 
@@ -528,9 +526,11 @@ ApplicationWindow {
     component DesktopIcon: Item {
         id: icon
 
+        // Named iconSource rather than icon: this Item's own id is "icon"
+        // (used throughout below), and a property can't share that name.
         required property string shortcutId
         required property string title
-        required property string symbol
+        required property string iconSource
         required property string command
         required property real posX
         required property real posY
@@ -568,12 +568,11 @@ ApplicationWindow {
                 radius: 14
                 color: root.primary
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: icon.symbol
-                    color: "white"
-                    font.pixelSize: 22
-                    font.bold: true
+                    source: icon.iconSource
+                    sourceSize.width: 22
+                    sourceSize.height: 22
                 }
             }
 

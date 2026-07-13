@@ -27,6 +27,8 @@ qt_add_qml_module(outback-settings
     RESOURCE_PREFIX /
     QML_FILES
         Main.qml
+    RESOURCES
+        icons/outback-mark.svg
 )
 
 target_link_libraries(outback-settings

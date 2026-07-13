@@ -4,12 +4,13 @@
 
 class QSocketNotifier;
 
-// Lets the compositor's Super-key keybind (which can only run a shell
-// command, not call into a running process) ask the already-running
-// taskbar to toggle its start menu, by sending SIGUSR1 to its pid. Unix
-// signal handlers can only safely write to an async-signal-safe function
-// (write(2) here), so the handler writes a byte to a socketpair and a
-// QSocketNotifier picks it up back on the Qt event loop, where emitting
+// Lets the compositor's Super-key keybind and other one-shot scripts (which
+// can only run a shell command, not call into a running process) ask the
+// already-running taskbar to toggle its start menu or show the lock screen,
+// by sending SIGUSR1/SIGUSR2 to its pid. Unix signal handlers can only
+// safely write to an async-signal-safe function (write(2) here), so the
+// handler writes a byte identifying which signal fired to a socketpair and
+// a QSocketNotifier picks it up back on the Qt event loop, where emitting
 // a signal is safe.
 class SignalBridge final : public QObject
 {
@@ -23,6 +24,7 @@ public:
 
 signals:
     void toggleStartMenuRequested();
+    void lockRequested();
 
 private slots:
     void handleSignal();

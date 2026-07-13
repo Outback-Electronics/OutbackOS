@@ -16,6 +16,8 @@ Window {
     required property color textSecondary
     required property real taskbarHeight
 
+    signal lockRequested()
+
     readonly property var filteredApps: {
         const q = searchField.text.trim().toLowerCase()
         if (q.length === 0) {
@@ -31,6 +33,53 @@ Window {
             return Apps.entries.find(function (app) { return app.id === id })
         })
         .filter(function (app) { return app !== undefined })
+
+    readonly property bool showingRecents: searchField.text.length === 0 && menu.recentApps.length > 0
+
+    readonly property var actionEntries: [
+        {
+            label: "Lock Screen",
+            icon: "icons/lock.svg",
+            run: function () {
+                menu.close()
+                menu.lockRequested()
+            }
+        },
+        {
+            label: "Sign Out",
+            icon: "icons/signout.svg",
+            run: function () {
+                systemLauncher.signOut()
+                menu.close()
+            }
+        },
+        {
+            label: "Restart",
+            icon: "icons/restart.svg",
+            run: function () {
+                systemLauncher.reboot()
+                menu.close()
+            }
+        },
+        {
+            label: "Shut Down",
+            icon: "icons/power.svg",
+            run: function () {
+                systemLauncher.shutdown()
+                menu.close()
+            }
+        }
+    ]
+
+    // Every navigable row (recents, all-apps, and the fixed actions at the
+    // bottom) shares this single index space, in on-screen order, so arrow
+    // keys can move through the whole panel and mouse hover stays in sync
+    // with keyboard focus no matter which section it lands in.
+    readonly property int recentsCount: menu.showingRecents ? menu.recentApps.length : 0
+    readonly property int allAppsCount: menu.filteredApps.length
+    readonly property int totalCount: menu.recentsCount + menu.allAppsCount + menu.actionEntries.length
+
+    property int currentIndex: 0
 
     // Covers the whole output so a click anywhere outside the panel can be
     // caught and closes the menu; the panel itself is positioned within
@@ -73,10 +122,47 @@ Window {
         menu.close()
     }
 
+    function moveCurrent(delta) {
+        if (menu.totalCount === 0) {
+            return
+        }
+
+        menu.currentIndex = (menu.currentIndex + delta + menu.totalCount) % menu.totalCount
+    }
+
+    function activateCurrent() {
+        const index = menu.currentIndex
+
+        if (index < 0 || index >= menu.totalCount) {
+            return
+        }
+
+        if (index < menu.recentsCount) {
+            menu.launch(menu.recentApps[index])
+            return
+        }
+
+        const allIndex = index - menu.recentsCount
+
+        if (allIndex < menu.allAppsCount) {
+            menu.launch(menu.filteredApps[allIndex])
+            return
+        }
+
+        menu.actionEntries[allIndex - menu.allAppsCount].run()
+    }
+
     onVisibleChanged: {
         if (visible) {
             searchField.text = ""
+            menu.currentIndex = 0
             searchField.forceActiveFocus()
+        }
+    }
+
+    onTotalCountChanged: {
+        if (menu.currentIndex >= menu.totalCount) {
+            menu.currentIndex = Math.max(0, menu.totalCount - 1)
         }
     }
 
@@ -98,8 +184,6 @@ Window {
         color: menu.surface
         border.color: menu.surfaceRaised
         border.width: 1
-
-        Keys.onEscapePressed: menu.close()
 
         MouseArea {
             // Swallows clicks inside the panel so they don't fall through
@@ -125,12 +209,11 @@ Window {
                     radius: 15
                     color: menu.primary
 
-                    Text {
+                    Image {
                         anchors.centerIn: parent
-                        text: "O"
-                        color: "white"
-                        font.pixelSize: 13
-                        font.bold: true
+                        source: "icons/outback-mark.svg"
+                        sourceSize.width: 16
+                        sourceSize.height: 16
                     }
                 }
 
@@ -150,12 +233,13 @@ Window {
                 placeholderText: "Type to search apps"
                 selectByMouse: true
 
+                onTextChanged: menu.currentIndex = 0
+
                 Keys.onEscapePressed: menu.close()
-                Keys.onReturnPressed: {
-                    if (menu.filteredApps.length > 0) {
-                        menu.launch(menu.filteredApps[0])
-                    }
-                }
+                Keys.onUpPressed: menu.moveCurrent(-1)
+                Keys.onDownPressed: menu.moveCurrent(1)
+                Keys.onReturnPressed: menu.activateCurrent()
+                Keys.onEnterPressed: menu.activateCurrent()
             }
 
             Text {
@@ -163,16 +247,21 @@ Window {
                 color: menu.textSecondary
                 font.pixelSize: 11
                 Layout.topMargin: 4
-                visible: searchField.text.length === 0 && menu.recentApps.length > 0
+                visible: menu.showingRecents
             }
 
             Repeater {
-                model: searchField.text.length === 0 ? menu.recentApps : []
+                model: menu.showingRecents ? menu.recentApps : []
 
                 delegate: AppEntry {
                     required property var modelData
+                    required property int index
+
                     Layout.fillWidth: true
                     app: modelData
+                    highlighted: menu.currentIndex === index
+
+                    onHovered: menu.currentIndex = index
                 }
             }
 
@@ -181,7 +270,7 @@ Window {
                 Layout.preferredHeight: 1
                 Layout.topMargin: 2
                 Layout.bottomMargin: 2
-                visible: searchField.text.length === 0 && menu.recentApps.length > 0
+                visible: menu.showingRecents
                 color: menu.surfaceRaised
             }
 
@@ -198,8 +287,13 @@ Window {
 
                 delegate: AppEntry {
                     required property var modelData
+                    required property int index
+
                     Layout.fillWidth: true
                     app: modelData
+                    highlighted: menu.currentIndex === (menu.recentsCount + index)
+
+                    onHovered: menu.currentIndex = menu.recentsCount + index
                 }
             }
 
@@ -219,30 +313,20 @@ Window {
                 color: menu.surfaceRaised
             }
 
-            MenuEntry {
-                Layout.fillWidth: true
-                label: "Sign Out"
-                onActivated: {
-                    systemLauncher.signOut()
-                    menu.close()
-                }
-            }
+            Repeater {
+                model: menu.actionEntries
 
-            MenuEntry {
-                Layout.fillWidth: true
-                label: "Restart"
-                onActivated: {
-                    systemLauncher.reboot()
-                    menu.close()
-                }
-            }
+                delegate: MenuEntry {
+                    required property var modelData
+                    required property int index
 
-            MenuEntry {
-                Layout.fillWidth: true
-                label: "Shut Down"
-                onActivated: {
-                    systemLauncher.shutdown()
-                    menu.close()
+                    Layout.fillWidth: true
+                    label: modelData.label
+                    icon: modelData.icon
+                    highlighted: menu.currentIndex === (menu.recentsCount + menu.allAppsCount + index)
+
+                    onHovered: menu.currentIndex = menu.recentsCount + menu.allAppsCount + index
+                    onActivated: modelData.run()
                 }
             }
         }
@@ -252,10 +336,13 @@ Window {
         id: entry
 
         required property var app
+        property bool highlighted: false
+
+        signal hovered()
 
         Layout.preferredHeight: 44
         radius: 10
-        color: entryMouse.containsMouse ? menu.surfaceRaised : "transparent"
+        color: (entry.highlighted || entryMouse.containsMouse) ? menu.surfaceRaised : "transparent"
 
         Behavior on color {
             ColorAnimation { duration: 120 }
@@ -273,12 +360,11 @@ Window {
                 radius: 8
                 color: entry.app.accent
 
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: entry.app.symbol
-                    color: "white"
-                    font.pixelSize: 13
-                    font.bold: true
+                    source: entry.app.icon
+                    sourceSize.width: 15
+                    sourceSize.height: 15
                 }
             }
 
@@ -297,6 +383,7 @@ Window {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: entry.hovered()
             onClicked: menu.launch(entry.app)
         }
     }
@@ -305,23 +392,40 @@ Window {
         id: entry
 
         required property string label
+        required property string icon
+        property bool highlighted: false
+
         signal activated()
+        signal hovered()
 
         Layout.preferredHeight: 40
         radius: 10
-        color: entryMouse.containsMouse ? menu.surfaceRaised : "transparent"
+        color: (entry.highlighted || entryMouse.containsMouse) ? menu.surfaceRaised : "transparent"
 
         Behavior on color {
             ColorAnimation { duration: 120 }
         }
 
-        Text {
-            anchors.left: parent.left
+        RowLayout {
+            anchors.fill: parent
             anchors.leftMargin: 14
-            anchors.verticalCenter: parent.verticalCenter
-            text: entry.label
-            color: menu.textPrimary
-            font.pixelSize: 14
+            anchors.rightMargin: 14
+            spacing: 10
+
+            Image {
+                source: entry.icon
+                sourceSize.width: 18
+                sourceSize.height: 18
+                Layout.preferredWidth: 18
+                Layout.preferredHeight: 18
+            }
+
+            Text {
+                Layout.fillWidth: true
+                text: entry.label
+                color: menu.textPrimary
+                font.pixelSize: 14
+            }
         }
 
         MouseArea {
@@ -330,6 +434,7 @@ Window {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: entry.hovered()
             onClicked: entry.activated()
         }
     }

@@ -559,6 +559,99 @@ bool SystemBackend::wifiConnecting() const
     return m_wifiConnecting;
 }
 
+bool SystemBackend::installingUpdates() const
+{
+    return m_installingUpdates;
+}
+
+void SystemBackend::installUpdates()
+{
+    if (m_installingUpdates) {
+        return;
+    }
+
+    m_installingUpdates = true;
+    emit installingUpdatesChanged();
+
+    m_updatesInstallProcess.setProgram(QStringLiteral("pkexec"));
+    m_updatesInstallProcess.setArguments({
+        QStringLiteral("apt-get"),
+        QStringLiteral("-y"),
+        QStringLiteral("upgrade")
+    });
+
+    disconnect(
+        &m_updatesInstallProcess,
+        nullptr,
+        this,
+        nullptr
+    );
+
+    connect(
+        &m_updatesInstallProcess,
+        &QProcess::finished,
+        this,
+        [this](
+            int exitCode,
+            QProcess::ExitStatus exitStatus
+        ) {
+            const QString error = QString::fromUtf8(
+                m_updatesInstallProcess.readAllStandardError()
+            ).trimmed();
+
+            m_installingUpdates = false;
+            emit installingUpdatesChanged();
+
+            const bool success =
+                exitStatus == QProcess::NormalExit
+                && exitCode == 0;
+
+            emit updatesInstallFinished(
+                success,
+                success
+                    ? QStringLiteral("Updates installed successfully")
+                    : (error.isEmpty()
+                        ? QStringLiteral("Could not install updates")
+                        : error)
+            );
+        }
+    );
+
+    m_updatesInstallProcess.start();
+}
+
+bool SystemBackend::setAutoLockMinutes(int minutes)
+{
+    CommandRunner::run(
+        QStringLiteral("pkill"),
+        {
+            QStringLiteral("-x"),
+            QStringLiteral("swayidle")
+        }
+    );
+
+    if (minutes <= 0) {
+        return true;
+    }
+
+    return QProcess::startDetached(
+        QStringLiteral("swayidle"),
+        {
+            QStringLiteral("-w"),
+            QStringLiteral("timeout"),
+            QString::number(minutes * 60),
+            QStringLiteral("/usr/bin/outback-lock")
+        }
+    );
+}
+
+bool SystemBackend::lockScreenNow()
+{
+    return QProcess::startDetached(
+        QStringLiteral("/usr/bin/outback-lock")
+    );
+}
+
 bool SystemBackend::autoUpdatesEnabled() const
 {
     return CommandRunner::run(
