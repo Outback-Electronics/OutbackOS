@@ -1,22 +1,15 @@
+pragma Singleton
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import Qt.labs.settings
 import org.kde.layershell 1.0 as LayerShellQt
-import Outback.Taskbar
 
 Window {
     id: menu
 
-    required property color surface
-    required property color surfaceRaised
-    required property color primary
-    required property color textPrimary
-    required property color textSecondary
-    required property real taskbarHeight
-
-    signal lockRequested()
+    readonly property int taskbarHeight: 56
 
     readonly property var filteredApps: {
         const q = searchField.text.trim().toLowerCase()
@@ -42,7 +35,7 @@ Window {
             icon: "icons/lock.svg",
             run: function () {
                 menu.close()
-                menu.lockRequested()
+                LockScreen.show()
             }
         },
         {
@@ -102,8 +95,18 @@ Window {
         property var recentIds: []
     }
 
-    function toggle() {
-        menu.visible = !menu.visible
+    // Shows (or hides, if already open on that output) the menu on a
+    // specific output. Each output gets its own taskbar panel, but there is
+    // only ever one start menu, so whichever panel triggers it just moves
+    // it to its own screen.
+    function toggleOn(targetScreen) {
+        if (menu.visible && menu.screen === targetScreen) {
+            menu.close()
+            return
+        }
+
+        menu.screen = targetScreen
+        menu.visible = true
     }
 
     function close() {
@@ -181,8 +184,8 @@ Window {
         width: 300
         height: content.implicitHeight + 24
         radius: 16
-        color: menu.surface
-        border.color: menu.surfaceRaised
+        color: Theme.surface
+        border.color: Theme.surfaceRaised
         border.width: 1
 
         MouseArea {
@@ -207,7 +210,7 @@ Window {
                     Layout.preferredWidth: 30
                     Layout.preferredHeight: 30
                     radius: 15
-                    color: menu.primary
+                    color: Theme.primary
 
                     Image {
                         anchors.centerIn: parent
@@ -220,7 +223,7 @@ Window {
                 Text {
                     Layout.fillWidth: true
                     text: "Outback"
-                    color: menu.textPrimary
+                    color: Theme.textPrimary
                     font.pixelSize: 14
                     font.weight: Font.Medium
                 }
@@ -244,7 +247,7 @@ Window {
 
             Text {
                 text: "Recent"
-                color: menu.textSecondary
+                color: Theme.textSecondary
                 font.pixelSize: 11
                 Layout.topMargin: 4
                 visible: menu.showingRecents
@@ -271,12 +274,12 @@ Window {
                 Layout.topMargin: 2
                 Layout.bottomMargin: 2
                 visible: menu.showingRecents
-                color: menu.surfaceRaised
+                color: Theme.surfaceRaised
             }
 
             Text {
                 text: "All Apps"
-                color: menu.textSecondary
+                color: Theme.textSecondary
                 font.pixelSize: 11
                 Layout.topMargin: 4
                 visible: searchField.text.length === 0
@@ -299,7 +302,7 @@ Window {
 
             Text {
                 text: "No apps found"
-                color: menu.textSecondary
+                color: Theme.textSecondary
                 font.pixelSize: 13
                 Layout.topMargin: 4
                 visible: menu.filteredApps.length === 0
@@ -310,7 +313,7 @@ Window {
                 Layout.preferredHeight: 1
                 Layout.topMargin: 4
                 Layout.bottomMargin: 4
-                color: menu.surfaceRaised
+                color: Theme.surfaceRaised
             }
 
             Repeater {
@@ -342,7 +345,7 @@ Window {
 
         Layout.preferredHeight: 44
         radius: 10
-        color: (entry.highlighted || entryMouse.containsMouse) ? menu.surfaceRaised : "transparent"
+        color: (entry.highlighted || entryMouse.containsMouse) ? Theme.surfaceRaised : "transparent"
 
         Behavior on color {
             ColorAnimation { duration: 120 }
@@ -371,9 +374,41 @@ Window {
             Text {
                 Layout.fillWidth: true
                 text: entry.app.label
-                color: menu.textPrimary
+                color: Theme.textPrimary
                 font.pixelSize: 14
                 elide: Text.ElideRight
+            }
+
+            Rectangle {
+                id: pinToggle
+
+                Layout.preferredWidth: 26
+                Layout.preferredHeight: 26
+                radius: 8
+                color: pinMouse.containsMouse ? Theme.surface : "transparent"
+                z: 1
+
+                readonly property bool pinned: PinnedApps.isPinned(entry.app.id)
+
+                Text {
+                    anchors.centerIn: parent
+                    text: pinToggle.pinned ? "★" : "☆"
+                    color: pinToggle.pinned ? Theme.primary : Theme.textSecondary
+                    font.pixelSize: 13
+                }
+
+                MouseArea {
+                    id: pinMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    ToolTip.visible: containsMouse
+                    ToolTip.text: pinToggle.pinned ? "Unpin from taskbar" : "Pin to taskbar"
+                    ToolTip.delay: 500
+
+                    onClicked: PinnedApps.toggle(entry.app.id)
+                }
             }
         }
 
@@ -400,7 +435,7 @@ Window {
 
         Layout.preferredHeight: 40
         radius: 10
-        color: (entry.highlighted || entryMouse.containsMouse) ? menu.surfaceRaised : "transparent"
+        color: (entry.highlighted || entryMouse.containsMouse) ? Theme.surfaceRaised : "transparent"
 
         Behavior on color {
             ColorAnimation { duration: 120 }
@@ -423,7 +458,7 @@ Window {
             Text {
                 Layout.fillWidth: true
                 text: entry.label
-                color: menu.textPrimary
+                color: Theme.textPrimary
                 font.pixelSize: 14
             }
         }

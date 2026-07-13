@@ -39,4 +39,32 @@ QtObject {
             pinned: true
         }
     ]
+
+    function byId(appId) {
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].id === appId) {
+                return entries[i]
+            }
+        }
+
+        return null
+    }
+
+    // Matches a running window's Wayland app_id (e.g. "outback-terminal")
+    // against a catalog entry's launch command (".../outback-terminal") so
+    // the window-list context menu can offer "Pin to taskbar" for windows
+    // belonging to apps Outback OS actually ships.
+    function byAppId(waylandAppId) {
+        if (!waylandAppId) {
+            return null
+        }
+
+        for (let i = 0; i < entries.length; i++) {
+            if (entries[i].command.endsWith("/" + waylandAppId)) {
+                return entries[i]
+            }
+        }
+
+        return null
+    }
 }

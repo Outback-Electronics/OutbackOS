@@ -45,6 +45,15 @@ void ForeignToplevel::requestToggleMinimize()
     }
 }
 
+void ForeignToplevel::requestToggleMaximize()
+{
+    if (m_maximized) {
+        unset_maximized();
+    } else {
+        set_maximized();
+    }
+}
+
 void ForeignToplevel::zwlr_foreign_toplevel_handle_v1_title(const QString &title)
 {
     if (m_title == title)

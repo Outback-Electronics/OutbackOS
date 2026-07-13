@@ -3,6 +3,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 add_library(outback-common STATIC
     CommandRunner.cpp
     CommandRunner.h
+    SystemBackend.cpp
+    SystemBackend.h
     SystemLauncher.cpp
     SystemLauncher.h
 )

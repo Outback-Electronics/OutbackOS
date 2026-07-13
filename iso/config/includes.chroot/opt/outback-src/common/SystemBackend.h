@@ -69,6 +69,10 @@ public:
     Q_INVOKABLE bool setBluetoothEnabled(bool enabled);
     Q_INVOKABLE void startBluetoothScan();
 
+    Q_INVOKABLE bool batteryPresent() const;
+    Q_INVOKABLE int batteryPercentage() const;
+    Q_INVOKABLE bool batteryCharging() const;
+
     Q_INVOKABLE QString kernelVersion() const;
     Q_INVOKABLE QString operatingSystem() const;
     Q_INVOKABLE QString checkForUpdates();
